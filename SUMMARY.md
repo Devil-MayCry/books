@@ -15,8 +15,8 @@
   * 设计模式学习笔记
 * [架构类](jia-gou-lei.md)
   * [架构简洁之道](jia-gou-lei/jia-gou-jian-ji-zhi-dao.md)
-  * [《单元测试的艺术》笔记](unit-test.md)
-    * [第一章](unit-test/di-yi-zhang.md)
+  * [《单元测试的艺术》笔记](jia-gou-lei/unit-test/unit-test.md)
+    * [第一章](jia-gou-lei/unit-test/di-yi-zhang.md)
 * [读书笔记杂](du-shu-bi-ji-za.md)
   * [杂](du-shu-bi-ji-za/za.md)
   * [穷查理宝典](du-shu-bi-ji-za/qiong-cha-li-bao-dian.md)
