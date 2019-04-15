@@ -13,7 +13,7 @@
   * [Go语言学习笔记](ji-suan-ji-ji-chu-lei/goyu-yan-xue-xi-bi-ji.md)
   * [深入理解计算机系统](shen-ru-li-jie-ji-suan-ji-xi-tong.md)
   * 设计模式学习笔记
-* 架构类
+* [架构类](jia-gou-lei.md)
   * [架构简洁之道](jia-gou-jian-ji-zhi-dao.md)
   * [《单元测试的艺术》笔记](unit-test.md)
     * [第一章](unit-test/di-yi-zhang.md)
