@@ -93,7 +93,8 @@ void getNext(char * p, int * next)
 
 ```
 
-
+&nbsp;
+&nbsp;
 作者：海纳
 链接：https://www.zhihu.com/question/21923021/answer/281346746
 来源：知乎
