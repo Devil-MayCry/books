@@ -23,7 +23,7 @@ type hchan struct {
 	lock     mutex          // 互斥锁，chan不允许并发读写
 }
 ```
-
+从数据结构可以看出channel由队列、类型信息、goroutine等待队列组成，下面分别说明其原理。
 #### panic
 
 
