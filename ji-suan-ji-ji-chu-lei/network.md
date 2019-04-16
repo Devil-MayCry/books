@@ -1,6 +1,6 @@
 
 
-![](/assets/network1.png)
+![](/assets/network1.jpeg)
 
 ### TCP三次握手
 
