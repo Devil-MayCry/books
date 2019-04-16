@@ -83,22 +83,21 @@ int
 )
  *hchan 
 {
-	var c *hchan
-	c = 
+    var c *hchan
+    c = 
 new
 (hchan)
-	c.buf = 
+    c.buf = 
 malloc
 (元素类型大小*size)
-	c.elemsize = 元素类型大小
-	c.elemtype = 元素类型
-	c.dataqsiz = size
+    c.elemsize = 元素类型大小
+    c.elemtype = 元素类型
+    c.dataqsiz = size
 
-	
+
 return
  c
 }
-
 ```
 
 ##### 3.2 向channel写数据
@@ -134,7 +133,270 @@ return
 2. 关闭已经被关闭的channel
 3. 向已经关闭的channel写数据
 
-#### panic
+## panic
 
+`panic`和`recover`关键字会在[编译期间](https://link.juejin.im/?target=https%3A%2F%2Fdraveness.me%2Fgolang-compile-intro)被 Go 语言的编译器转换成`OPANIC`和`ORECOVER`类型的节点并进一步转换成`gopanic`和`gorecover`两个运行时的函数调用。
 
+### 数据结构 {#数据结构}
+
+`panic`在 Golang 中其实是由一个数据结构表示的，每当我们调用一次`panic`函数都会创建一个如下所示的数据结构存储相关的信息：
+
+```
+type _panic struct {
+	argp      unsafe.Pointer
+	arg       interface{}
+	link      *_panic
+	recovered bool
+	aborted   bool
+}
+
+```
+
+argp 是指向 defer 调用时参数的指针；
+
+arg 是调用 panic 时传入的参数；
+
+link 指向了更早调用的 \_panic 结构；
+
+recovered 表示当前 \_panic 是否被 recover 恢复；
+
+aborted 表示当前的 panic 是否被强行终止；
+
+从数据结构中的`link`字段我们就可以推测出以下的结论 —`panic`函数可以被连续多次调用，它们之间通过`link`的关联形成一个链表。
+
+### 崩溃 {#崩溃}
+
+首先了解一下没有被`recover`的`panic`函数是如何终止整个程序的，我们来看一下`gopanic`函数的实现
+
+```
+func gopanic(e interface{}) {
+	gp := getg()
+	// ...
+	var p _panic
+	p.arg = e
+	p.link = gp._panic
+	gp._panic = (*_panic)(noescape(unsafe.Pointer(
+&
+p)))
+
+	for {
+		d := gp._defer
+		if d == nil {
+			break
+		}
+
+		d._panic = (*_panic)(noescape(unsafe.Pointer(
+&
+p)))
+
+		p.argp = unsafe.Pointer(getargp(0))
+		reflectcall(nil, unsafe.Pointer(d.fn), deferArgs(d), uint32(d.siz), uint32(d.siz))
+		p.argp = nil
+
+		d._panic = nil
+		d.fn = nil
+		gp._defer = d.link
+
+		pc := d.pc
+		sp := unsafe.Pointer(d.sp)
+		freedefer(d)
+		if p.recovered {
+			// ...
+		}
+	}
+
+	fatalpanic(gp._panic)
+	*(*int)(nil) = 0
+}
+
+```
+
+我们暂时省略了 recover 相关的代码，省略后的 gopanic 函数执行过程包含以下几个步骤：
+
+获取当前 panic 调用所在的 Goroutine 协程；
+
+创建并初始化一个 \_panic 结构体；
+
+从当前 Goroutine 中的链表获取一个 \_defer 结构体；
+
+如果当前 \_defer 存在，调用 reflectcall 执行 \_defer 中的代码；
+
+将下一位的 \_defer 结构设置到 Goroutine 上并回到 3；
+
+调用 fatalpanic 中止整个程序；
+
+fatalpanic 函数在中止整个程序之前可能就会通过 printpanics 打印出全部的 panic 消息以及调用时传入的参数：
+
+```
+func fatalpanic(msgs *_panic) {
+	pc := getcallerpc()
+	sp := getcallersp()
+	gp := getg()
+	var docrash bool
+	systemstack(func() {
+		if startpanic_m() 
+&
+&
+ msgs != nil {
+			atomic.Xadd(
+&
+runningPanicDefers, -1)
+
+			printpanics(msgs)
+		}
+		docrash = dopanic_m(gp, pc, sp)
+	})
+
+	if docrash {
+		crash()
+	}
+
+	systemstack(func() {
+		exit(2)
+	})
+
+	*(*int)(nil) = 0 // not reached
+}
+
+```
+
+在`fatalpanic`函数的最后会通过`exit`退出当前程序并返回错误码`2`，不同的操作系统其实对`exit`函数有着不同的实现，其实最终都执行了`exit`系统调用来退出程序。
+
+### 恢复 {#恢复}
+
+到了这里我们已经掌握了`panic`退出程序的过程，但是一个`panic`的程序也可能会被`defer`中的关键字`recover`恢复，在这时我们就回到`recover`关键字对应函数`gorecover`的实现了：
+
+```
+func gorecover(argp uintptr) interface{} {
+	p := gp._panic
+	if p != nil 
+&
+&
+ !p.recovered 
+&
+&
+ argp == uintptr(p.argp) {
+		p.recovered = true
+		return p.arg
+	}
+	return nil
+}
+
+```
+
+这个函数的实现其实非常简单，它其实就是会修改`panic`结构体的`recovered`字段，当前函数的调用其实都发生在`gopanic`期间，我们重新回顾一下这段方法的实现：
+
+```
+func gopanic(e interface{}) {
+	// ...
+
+	for {
+		// reflectcall
+
+		pc := d.pc
+		sp := unsafe.Pointer(d.sp)
+
+		// ...
+		if p.recovered {
+			gp._panic = p.link
+			for gp._panic != nil 
+&
+&
+ gp._panic.aborted {
+				gp._panic = gp._panic.link
+			}
+			if gp._panic == nil {
+				gp.sig = 0
+			}
+			gp.sigcode0 = uintptr(sp)
+			gp.sigcode1 = pc
+			mcall(recovery)
+			throw("recovery failed")
+		}
+	}
+
+	fatalpanic(gp._panic)
+	*(*int)(nil) = 0
+}
+
+```
+
+上述这段代码其实从`_defer`结构体中取出了程序计数器`pc`和栈指针`sp`并调用`recovery`方法进行调度，调度之前会准备好`sp`、`pc`以及函数的返回值：
+
+```
+func recovery(gp *g) {
+	sp := gp.sigcode0
+	pc := gp.sigcode1
+
+	gp.sched.sp = sp
+	gp.sched.pc = pc
+	gp.sched.lr = 0
+	gp.sched.ret = 1
+	gogo(
+&
+gp.sched)
+}
+
+```
+
+在[defer](https://link.juejin.im/?target=https%3A%2F%2Fdraveness.me%2Fgolang-defer)一节中我们曾经介绍过`deferproc`的实现，作为创建并初始化`_defer`结构体的函数，它会将`deferproc`函数开始位置对应的栈指针`sp`和程序计数器`pc`存储到`_defer`结构体中，这里的`gogo`函数其实就会跳回`deferproc`：
+
+```
+TEXT runtime·gogo(SB), NOSPLIT, $8-4
+	MOVL	buf+0(FP), BX		// gobuf
+	MOVL	gobuf_g(BX), DX
+	MOVL	0(DX), CX		// make sure g != nil
+	get_tls(CX)
+	MOVL	DX, g(CX)
+	MOVL	gobuf_sp(BX), SP	// restore SP
+	MOVL	gobuf_ret(BX), AX
+	MOVL	gobuf_ctxt(BX), DX
+	MOVL	$0, gobuf_sp(BX)	// clear to help garbage collector
+	MOVL	$0, gobuf_ret(BX)
+	MOVL	$0, gobuf_ctxt(BX)
+	MOVL	gobuf_pc(BX), BX
+	JMP	BX
+
+```
+
+这里的调度其实会将`deferproc`函数的返回值设置成`1`，在这时编译器生成的代码就会帮助我们直接跳转到调用方函数`return`之前并进入`deferreturn`的执行过程，我们可以从`deferproc`的注释中简单了解这一过程：
+
+```
+func deferproc(siz int32, fn *funcval) {
+	// ...
+
+	// deferproc returns 0 normally.
+	// a deferred func that stops a panic
+	// makes the deferproc return 1.
+	// the code the compiler generates always
+	// checks the return value and jumps to the
+	// end of the function if deferproc returns != 0.
+	return0()
+	// No code can go here - the C return register has
+	// been set and must not be clobbered.
+}
+
+```
+
+跳转到`deferreturn`函数之后，程序其实就从`panic`的过程中跳出来恢复了正常的执行逻辑，而`gorecover`函数也从`_panic`结构体中取出了调用`panic`时传入的`arg`参数。
+
+## 总结 {#总结}
+
+Go 语言中 panic 和 recover 的实现其实与 defer 关键字的联系非常紧密，而分析程序的恐慌和恢复过程也比较棘手，不是特别容易理解。在文章的最后我们还是简单总结一下具体的实现原理：
+
+在编译过程中会将 panic 和 recover 分别转换成 gopanic 和 gorecover函数，同时将 defer 转换成 deferproc 函数并在调用 defer 的函数和方法末尾增加 deferreturn 的指令；
+
+在运行过程中遇到 gopanic 方法时，会从当前 Goroutine 中取出 \_defer 的链表并通过 reflectcall 调用用于收尾的函数；
+
+如果在 reflectcall 调用时遇到了 gorecover 就会直接将当前的 \_panic.recovered 标记成 true 并返回 panic 传入的参数（在这时 recover 就能够获取到 panic 的信息）；
+
+在这次调用结束之后，gopanic 会从 \_defer 结构体中取出程序计数器 pc 和栈指针 sp 并调用 recovery 方法进行恢复；
+
+recovery 会根据传入的 pc 和 sp 跳转到 deferproc 函数；
+
+编译器自动生成的代码会发现 deferproc 的返回值不为 0，这时就会直接跳到 deferreturn 函数中并恢复到正常的控制流程（依次执行剩余的 defer 并正常退出）；
+
+如果没有遇到 gorecover 就会依次遍历所有的 \_defer 结构，并在最后调用 fatalpanic 中止程序、打印 panic 参数并返回错误码 2；
+
+整个过程涉及了一些 Go 语言底层相关的知识并且发生了非常多的跳转，相关的源代码也不是特别的直接，阅读起来也比较晦涩，不过还是对我们理解 Go 语言的错误处理机制有着比较大的帮助。
 
