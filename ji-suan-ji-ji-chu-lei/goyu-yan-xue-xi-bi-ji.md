@@ -67,7 +67,72 @@ chan内部实现了一个环形队列作为其缓冲区，队列的长度是创�
 
 一个channel同时仅允许被一个goroutine读写，为简单起见，本章后续部分说明读写过程时不再涉及加锁和解锁。
 
-#### 
+#### chan读写
+
+##### 3.1 创建channel
+
+创建channel的过程实际上是初始化hchan结构。其中类型信息和缓冲区长度由make语句传入，buf的大小则与元素大小和缓冲区长度共同决定。
+
+创建channel的伪代码如下所示：
+
+```
+func 
+makechan
+(t *chantype, size 
+int
+)
+ *hchan 
+{
+	var c *hchan
+	c = 
+new
+(hchan)
+	c.buf = 
+malloc
+(元素类型大小*size)
+	c.elemsize = 元素类型大小
+	c.elemtype = 元素类型
+	c.dataqsiz = size
+
+	
+return
+ c
+}
+
+```
+
+##### 3.2 向channel写数据
+
+向一个channel中写数据简单过程如下：
+
+1. 如果等待接收队列recvq不为空，说明缓冲区中没有数据或者没有缓冲区，此时直接从recvq取出G,并把数据写入，最后把该G唤醒，结束发送过程；
+2. 如果缓冲区中有空余位置，将数据写入缓冲区，结束发送过程；
+3. 如果缓冲区中没有空余位置，将待发送数据写入G，将当前G加入sendq，进入睡眠，等待被读goroutine唤醒；
+
+简单流程图如下：  
+![](https://oscimg.oschina.net/oscnet/c4ba40130182bf4264ad458a2f05863bef1.jpg)
+
+##### 3.3 从channel读数据
+
+从一个channel读数据简单过程如下：
+
+1. 如果等待发送队列sendq不为空，且没有缓冲区，直接从sendq中取出G，把G中数据读出，最后把G唤醒，结束读取过程；
+2. 如果等待发送队列sendq不为空，此时说明缓冲区已满，从缓冲区中首部读出数据，把G中数据写入缓冲区尾部，把G唤醒，结束读取过程；
+3. 如果缓冲区中有数据，则从缓冲区取出数据，结束读取过程；
+4. 将当前goroutine加入recvq，进入睡眠，等待被写goroutine唤醒；
+
+简单流程图如下：  
+![](https://oscimg.oschina.net/oscnet/820d765ece5100b753e5e6c53bff08b7c2d.jpg)
+
+##### 3.4 关闭channel
+
+关闭channel时会把recvq中的G全部唤醒，本该写入G的数据位置为nil。把sendq中的G全部唤醒，但这些G会panic。
+
+除此之外，panic出现的常见场景还有：
+
+1. 关闭值为nil的channel
+2. 关闭已经被关闭的channel
+3. 向已经关闭的channel写数据
 
 #### panic
 
