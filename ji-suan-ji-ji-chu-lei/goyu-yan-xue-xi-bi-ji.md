@@ -365,12 +365,12 @@ func deferproc(siz int32, fn *funcval) {
 
 Go 语言中 panic 和 recover 的实现其实与 defer 关键字的联系非常紧密，而分析程序的恐慌和恢复过程也比较棘手，不是特别容易理解。在文章的最后我们还是简单总结一下具体的实现原理：
 
-### 在编译过程中会将 panic 和 recover 分别转换成 gopanic 和 gorecover函数，同时将 defer 转换成 deferproc 函数并在调用 defer 的函数和方法末尾增加 deferreturn 的指令；
-### 在运行过程中遇到 gopanic 方法时，会从当前 Goroutine 中取出 \_defer 的链表并通过 reflectcall 调用用于收尾的函数；
-### 如果在 reflectcall 调用时遇到了 gorecover 就会直接将当前的 \_panic.recovered 标记成 true 并返回 panic 传入的参数（在这时 recover 就能够获取到 panic 的信息）；
-### 在这次调用结束之后，gopanic 会从 \_defer 结构体中取出程序计数器 pc 和栈指针 sp 并调用 recovery 方法进行恢复；
-### recovery 会根据传入的 pc 和 sp 跳转到 deferproc 函数；
-### 编译器自动生成的代码会发现 deferproc 的返回值不为 0，这时就会直接跳到 deferreturn 函数中并恢复到正常的控制流程（依次执行剩余的 defer 并正常退出）；
-### 如果没有遇到 gorecover 就会依次遍历所有的 \_defer 结构，并在最后调用 fatalpanic 中止程序、打印 panic 参数并返回错误码 2；
-### 整个过程涉及了一些 Go 语言底层相关的知识并且发生了非常多的跳转，相关的源代码也不是特别的直接，阅读起来也比较晦涩，不过还是对我们理解 Go 语言的错误处理机制有着比较大的帮助。
+* 在编译过程中会将 panic 和 recover 分别转换成 gopanic 和 gorecover函数，同时将 defer 转换成 deferproc 函数并在调用 defer 的函数和方法末尾增加 deferreturn 的指令；
+* 在运行过程中遇到 gopanic 方法时，会从当前 Goroutine 中取出 \_defer 的链表并通过 reflectcall 调用用于收尾的函数；
+* 如果在 reflectcall 调用时遇到了 gorecover 就会直接将当前的 \_panic.recovered 标记成 true 并返回 panic 传入的参数（在这时 recover 就能够获取到 panic 的信息）；
+* 在这次调用结束之后，gopanic 会从 \_defer 结构体中取出程序计数器 pc 和栈指针 sp 并调用 recovery 方法进行恢复；
+* recovery 会根据传入的 pc 和 sp 跳转到 deferproc 函数；
+* 编译器自动生成的代码会发现 deferproc 的返回值不为 0，这时就会直接跳到 deferreturn 函数中并恢复到正常的控制流程（依次执行剩余的 defer 并正常退出）；
+* 如果没有遇到 gorecover 就会依次遍历所有的 \_defer 结构，并在最后调用 fatalpanic 中止程序、打印 panic 参数并返回错误码 2；
+* 整个过程涉及了一些 Go 语言底层相关的知识并且发生了非常多的跳转，相关的源代码也不是特别的直接，阅读起来也比较晦涩，不过还是对我们理解 Go 语言的错误处理机制有着比较大的帮助。
 
