@@ -175,8 +175,7 @@ func gopanic(e interface{}) {
 	var p _panic
 	p.arg = e
 	p.link = gp._panic
-	gp._panic = (*_panic)(noescape(unsafe.Pointer(
-		&p)))
+	gp._panic = (*_panic)(noescape(unsafe.Pointer(&p)))
 
 	for {
 		d := gp._defer
@@ -184,8 +183,7 @@ func gopanic(e interface{}) {
 			break
 		}
 
-		d._panic = (*_panic)(noescape(unsafe.Pointer(
-			&p)))
+		d._panic = (*_panic)(noescape(unsafe.Pointer(&p)))
 
 		p.argp = unsafe.Pointer(getargp(0))
 		reflectcall(nil, unsafe.Pointer(d.fn), deferArgs(d), uint32(d.siz), uint32(d.siz))
@@ -232,8 +230,7 @@ func fatalpanic(msgs *_panic) {
 	var docrash bool
 	systemstack(func() {
 		if startpanic_m(); & &msgs != nil {
-			atomic.Xadd(
-				&runningPanicDefers, -1)
+			atomic.Xadd(&runningPanicDefers, -1)
 
 			printpanics(msgs)
 		}
