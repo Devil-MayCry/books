@@ -14,6 +14,7 @@
   * [深入理解计算机系统](ji-suan-ji-ji-chu-lei/shen-ru-li-jie-ji-suan-ji-xi-tong.md)
   * 设计模式学习笔记
   * [字符串匹配KMP算法](ji-suan-ji-ji-chu-lei/zi-fu-chuan-pi-pei-kmp-suan-fa.md)
+  * [pprof和火焰图](ji-suan-ji-ji-chu-lei/pprofhe-huo-yan-tu.md)
 * [架构类](jia-gou-lei.md)
   * [架构简洁之道](jia-gou-lei/jia-gou-jian-jie-zhi-dao.md)
   * [《单元测试的艺术》笔记](jia-gou-lei/unit-test/unit-test.md)
