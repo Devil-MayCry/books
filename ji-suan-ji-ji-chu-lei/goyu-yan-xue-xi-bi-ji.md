@@ -168,7 +168,7 @@ aborted 表示当前的 panic 是否被强行终止；
 
 首先了解一下没有被`recover`的`panic`函数是如何终止整个程序的，我们来看一下`gopanic`函数的实现
 
-```
+``` go
 func gopanic(e interface{}) {
 	gp := getg()
 	// ...
@@ -176,8 +176,7 @@ func gopanic(e interface{}) {
 	p.arg = e
 	p.link = gp._panic
 	gp._panic = (*_panic)(noescape(unsafe.Pointer(
-&
-p)))
+		&p)))
 
 	for {
 		d := gp._defer
@@ -186,8 +185,7 @@ p)))
 		}
 
 		d._panic = (*_panic)(noescape(unsafe.Pointer(
-&
-p)))
+			&p)))
 
 		p.argp = unsafe.Pointer(getargp(0))
 		reflectcall(nil, unsafe.Pointer(d.fn), deferArgs(d), uint32(d.siz), uint32(d.siz))
@@ -208,7 +206,6 @@ p)))
 	fatalpanic(gp._panic)
 	*(*int)(nil) = 0
 }
-
 ```
 
 我们暂时省略了 recover 相关的代码，省略后的 gopanic 函数执行过程包含以下几个步骤：
@@ -227,20 +224,16 @@ p)))
 
 fatalpanic 函数在中止整个程序之前可能就会通过 printpanics 打印出全部的 panic 消息以及调用时传入的参数：
 
-```
+``` go
 func fatalpanic(msgs *_panic) {
 	pc := getcallerpc()
 	sp := getcallersp()
 	gp := getg()
 	var docrash bool
 	systemstack(func() {
-		if startpanic_m() 
-&
-&
- msgs != nil {
+		if startpanic_m(); & &msgs != nil {
 			atomic.Xadd(
-&
-runningPanicDefers, -1)
+				&runningPanicDefers, -1)
 
 			printpanics(msgs)
 		}
@@ -266,16 +259,10 @@ runningPanicDefers, -1)
 
 到了这里我们已经掌握了`panic`退出程序的过程，但是一个`panic`的程序也可能会被`defer`中的关键字`recover`恢复，在这时我们就回到`recover`关键字对应函数`gorecover`的实现了：
 
-```
+``` go
 func gorecover(argp uintptr) interface{} {
 	p := gp._panic
-	if p != nil 
-&
-&
- !p.recovered 
-&
-&
- argp == uintptr(p.argp) {
+	if p != nil && !p.recovered && argp == uintptr(p.argp) {
 		p.recovered = true
 		return p.arg
 	}
@@ -286,7 +273,7 @@ func gorecover(argp uintptr) interface{} {
 
 这个函数的实现其实非常简单，它其实就是会修改`panic`结构体的`recovered`字段，当前函数的调用其实都发生在`gopanic`期间，我们重新回顾一下这段方法的实现：
 
-```
+``` go
 func gopanic(e interface{}) {
 	// ...
 
@@ -299,10 +286,7 @@ func gopanic(e interface{}) {
 		// ...
 		if p.recovered {
 			gp._panic = p.link
-			for gp._panic != nil 
-&
-&
- gp._panic.aborted {
+			for gp._panic != nil && gp._panic.aborted {
 				gp._panic = gp._panic.link
 			}
 			if gp._panic == nil {
@@ -323,7 +307,7 @@ func gopanic(e interface{}) {
 
 上述这段代码其实从`_defer`结构体中取出了程序计数器`pc`和栈指针`sp`并调用`recovery`方法进行调度，调度之前会准备好`sp`、`pc`以及函数的返回值：
 
-```
+``` go
 func recovery(gp *g) {
 	sp := gp.sigcode0
 	pc := gp.sigcode1
@@ -332,9 +316,7 @@ func recovery(gp *g) {
 	gp.sched.pc = pc
 	gp.sched.lr = 0
 	gp.sched.ret = 1
-	gogo(
-&
-gp.sched)
+	gogo(&gp.sched)
 }
 
 ```
@@ -356,7 +338,6 @@ TEXT runtime·gogo(SB), NOSPLIT, $8-4
 	MOVL	$0, gobuf_ctxt(BX)
 	MOVL	gobuf_pc(BX), BX
 	JMP	BX
-
 ```
 
 这里的调度其实会将`deferproc`函数的返回值设置成`1`，在这时编译器生成的代码就会帮助我们直接跳转到调用方函数`return`之前并进入`deferreturn`的执行过程，我们可以从`deferproc`的注释中简单了解这一过程：
