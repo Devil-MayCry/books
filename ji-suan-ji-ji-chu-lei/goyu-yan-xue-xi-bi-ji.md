@@ -8,7 +8,7 @@
 
 `src/runtime/chan.go:hchan`定义了channel的数据结构：
 
-```
+``` go
 type hchan 
 struct
  {
