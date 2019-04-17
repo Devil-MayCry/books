@@ -6,6 +6,7 @@
   * [从paxos到zookeeper](fen-bu-shi-ji-zhu-zhi-shi/cong-paxos-dao-zookeeper.md)
   * [分布式系统-概念与设计](fen-bu-shi-ji-zhu-zhi-shi/fen-bu-shi-xi-7edf-gai-nian-yu-she-ji.md)
   * [区块链核心算法解析](fen-bu-shi-ji-zhu-zhi-shi/qu-kuai-lian-he-xin-suan-fa-jie-xi.md)
+  * [consul实现原理](fen-bu-shi-ji-zhu-zhi-shi/consulshi-xian-yuan-li.md)
 * [数据库知识](shu-ju-ku-zhi-shi.md)
   * [mysql](shu-ju-ku-zhi-shi/mysql.md)
   * [Redis](shu-ju-ku-zhi-shi/redis.md)
