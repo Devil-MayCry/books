@@ -61,7 +61,7 @@
 **Consul多个数据中心之间基于WAN来做同步**
 
 我们再通过一张图来了解一下一个数据中心中，server和client具体的角色：
-![](/assets/consul2.png)
+![](/assets/consul2.jpg)
 （图片转自http://developer.51cto.com/art/201812/589424.htm）
 
 可以看到，在单个数据中心中，Consul 分为 Client 和 Server 两种节点（所有的节点也被称为 Agent），Server 节点保存数据，Client 负责健康检查及转发数据请求到 Server。
