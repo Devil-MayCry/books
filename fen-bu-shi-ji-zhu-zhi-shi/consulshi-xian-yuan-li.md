@@ -1,6 +1,6 @@
-要想了解consul的实现原理，就得先理解consul是用来做什么的
+要想了解Consul的实现原理，就得先理解Consul是用来做什么的
 
-按照consul的[官方文档](https://www.consul.io/intro/index.html)，它主要提供以下功能：
+按照Consul的[官方文档](https://www.consul.io/intro/index.html)，它主要提供以下功能：
 
 * 服务注册与发现
 * 服务健康检查
@@ -32,12 +32,15 @@
   例如，Consul，Zookeeper满足了CP，而Euerka满足了AP
 
 到这里，我们可以总结一下了:  
-C**onsul是一个分布式的数据中心，能做到数据一致性的保证。**  
+**Consul是一个分布式的数据中心，能做到数据一致性的保证。**  
 现在你明白为什么Consul可以用来做服务注册和服务发现了吧：**如果没有一个一致性的保证机制，可能会出现一个服务注册后其他服务无法感知，或者发现了一个已经注销的服务的情况**
 
 现在我们可以来理解一下consul的实现原理了
 
 ![](/assets/consul1.png)
 
-可以看到Consul可以有多个数据中心，多个数据中心构成Consul集群，每个数据中心内，包含3个或5个（官方推荐）的consul sever，这样可以以较快的速度达成共识，以及可以高达上千个的consul client，每个数据中心有个一leader，所有数据中心的server组成的集群可以选举出一个leader，因为每个数据中心的节点是一个raft集合。从上边这个图中可以看到，consul client通过rpc的方式将请求转发到consul server ，consul server 再将请求转发到 server leader，server leader处理所有的请求，并将信息同步到其他的server中去。当一个数据中心的server没有leader的时候，这时候请求会被转发到其他的数据中心的consul server上，然后再转发到本数据中心的server leader上。
+可以看到Consul可以有多个数据中心，多个数据中心构成Consul集群。
+在每个数据中心内，包含可以高达上千个的Consul client，以及3个或5个（官方推荐）的Consul sever，在Consul sever中又选举出一个leader。
+因为每个数据中心的节点是一个raft集合。从上边这个图中可以看到，Consul client通过rpc的方式将请求转发到Consul server ，Consul server 再将请求转发到 server leader，server leader处理所有的请求，并将信息同步到其他的server中去。
+当一个数据中心的server没有leader的时候，这时候请求会被转发到其他的数据中心的Consul server上，然后再转发到本数据中心的server leader上。
 
