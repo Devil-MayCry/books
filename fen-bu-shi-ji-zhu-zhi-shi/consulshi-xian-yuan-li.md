@@ -1,3 +1,5 @@
+# 背景
+
 要想了解Consul的实现原理，就得先理解Consul是用来做什么的
 
 按照Consul的[官方文档](https://www.consul.io/intro/index.html)，它主要提供以下功能：
@@ -35,8 +37,11 @@
 **Consul是一个分布式的数据中心，能做到数据一致性的保证。**  
 现在你明白为什么Consul可以用来做服务注册和服务发现了吧：**如果没有一个一致性的保证机制，可能会出现一个服务注册后其他服务无法感知，或者发现了一个已经注销的服务的情况**
 
+# Cousul原理
+
 现在我们可以来理解一下consul的实现原理了
 
+## 术语解释
 
 首先我们来了解一下关键术语：
 
@@ -51,6 +56,8 @@
 * LAN Gossip——它包含所有位于同一个局域网或者数据中心的所有节点。
 
 * WAN Gossip——它只包含Server。这些server主要分布在不同的数据中心并且通常通过因特网或者广域网通信。
+
+## 架构分析
 
 然后，我们可以看看Consul官方提供的架构图了
 
@@ -75,8 +82,6 @@
 总结来说，所有的server节点共同组成了一个集群，他们之间运行raft协议，通过共识仲裁选举出leader。Consul client通过rpc的方式将请求转发到Consul server ，Consul server 再将请求转发到 server leader，server leader处理所有的请求，并将信息同步到其他的server中去。所有的业务数据都通过leader写入到集群中做持久化，当有半数以上的节点存储了该数据后，server集群才会返回ACK，从而保障了数据的强一致性。当然，server数量大了之后，也会影响写数据的效率。所有的follower会跟随leader的脚步，保障其有最新的数据副本。
 
 最后补充一下，当一个数据中心的server没有leader的时候，请求会被转发到其他的数据中心的Consul server上，然后再转发到本数据中心的server leader上
-
-### 
 
 
 
