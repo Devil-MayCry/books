@@ -1,3 +1,5 @@
+
+<!-- TOC -->autoauto- [背景](#背景)auto  - [consul提供什么功能](#consul提供什么功能)auto  - [分布式带来的问题](#分布式带来的问题)auto  - [CAP理论](#cap理论)auto- [Cousul原理](#cousul原理)auto  - [术语解释](#术语解释)auto  - [架构分析](#架构分析)auto    - [多数据中心](#多数据中心)auto    - [Server && Client](#server--client)auto    - [总结](#总结)autoauto<!-- /TOC -->
 # 背景
 要想了解Consul的实现原理，就得先理解Consul是用来做什么的
 
