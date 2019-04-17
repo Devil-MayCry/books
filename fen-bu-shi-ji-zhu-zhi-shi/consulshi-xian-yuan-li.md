@@ -55,7 +55,6 @@
 
 可以看到Consul可以有多个数据中心，多个数据中心构成Consul集群。数据中心间通过WAN GOSSIP在Internet上交互报文。也就是说，Consul多个数据中心之间基于WAN来做同步
 
-  
 在每个数据中心内，包含可以高达上千个的Consul client，以及3个或5个（官方推荐）的Consul sever，在Consul sever中又选举出一个leader。server和client之间，还有一条LAN GOSSIP通信，这是用于当LAN内部发生了拓扑变化时，存活的节点们能够及时感知，比如server节点down掉后，client就会触发将对应server节点从可用列表中剥离出去
 
 当然，server与server之间，client与client之间，client与server之间，在同一个datacenter中的所有consul agent会组成一个LAN网络（当然它们之间也可以按照区域划分segment），当LAN网中有任何角色变动，或者有用户自定义的event产生的时候，其他节点就会感知到，并触发对应的预置操作。
@@ -64,15 +63,7 @@
 
 当一个数据中心的server没有leader的时候，请求会被转发到其他的数据中心的Consul server上，然后再转发到本数据中心的server leader上
 
-### Consul-server 中 Leader的选举
-
-Consul中只有server节点会参与Raft算法并且作为peer set中的一部分。所有的client节点会转发请求道server节点。这个设计的部分原因是，随着更多的成员被添加到对等集，quorum的大小也会增加。这将带来性能问题，因为您可能需要等待数百台机器对条目达成一致，而不是等待少数机器。
-
-当启动时，单个Consul server的模式为bootstrap。这个模式允许节点选举自身作为leader。一旦leader选举成功，其他服务器可以以保持一致性和安全性的方式添加到对等集。最终，一旦初始的部分server被加入，bootstrap模式就会被disable。
-
-由于所有的server都处于对等集合中，它们都知道当前的leader是谁。当RPC到到一个非leader的server上时，请求会被转发到leader。如果PRC是一个查询类型，即只读的请求，leader会根据FSM的当前状态生成结果。如果RPC是一个转换类型，即它修改了状态，leader会生成一个新的日志条目并使用Raft算法对它进行应用。一旦日志条目提交并且应用于FSM了，转换请求就完成了。
-
-由于Raft的备份特性，它的性能对网络延迟是很敏感的。出于这个原因，每一个datacenter会选举独立的leader并且维护自己的不相交的对等集合。数据被datacenter进行分区，所以每个leader只负责处理它自己datacenter的数据。当请求被一个远程datacenter接收时，会被转发到正确的leader。这种设计允许低延迟事务和高可用性，而不牺牲一致性。
+### 
 
 
 
