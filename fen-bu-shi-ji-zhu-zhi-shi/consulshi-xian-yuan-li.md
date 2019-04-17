@@ -41,6 +41,8 @@
 
 可以看到Consul可以有多个数据中心，多个数据中心构成Consul集群。
 在每个数据中心内，包含可以高达上千个的Consul client，以及3个或5个（官方推荐）的Consul sever，在Consul sever中又选举出一个leader。
+
 因为每个数据中心的节点是一个raft集合。从上边这个图中可以看到，Consul client通过rpc的方式将请求转发到Consul server ，Consul server 再将请求转发到 server leader，server leader处理所有的请求，并将信息同步到其他的server中去。
+
 当一个数据中心的server没有leader的时候，这时候请求会被转发到其他的数据中心的Consul server上，然后再转发到本数据中心的server leader上。
 
