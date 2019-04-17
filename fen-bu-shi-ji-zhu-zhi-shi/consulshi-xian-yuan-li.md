@@ -49,7 +49,7 @@
 
 
 
-![](/assets/consul1.jpeg)
+![](/assets/consul1.png)
 
 
 
