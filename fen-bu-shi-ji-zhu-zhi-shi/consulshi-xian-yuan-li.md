@@ -1,15 +1,11 @@
-
-
 要想了解consul的实现原理，就得先理解consul是用来做什么的
-
-
 
 按照consul的[官方文档](https://www.consul.io/intro/index.html)，它主要提供以下功能：
 
 1. 服务注册与发现
 2. 服务健康检查
 3. KV存储
-4. 安全的服务通信（**Secure Service Communication**）
+4. 安全的服务通信（*Secure Service Communication*）
 5. 多数据中心
 
 
