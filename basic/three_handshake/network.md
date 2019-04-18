@@ -1,6 +1,6 @@
 
 
-![](/assets/network1.jpeg)
+![](network1.jpeg)
 
 ### TCP三次握手
 
@@ -21,7 +21,7 @@
 
 
 
-![](/assets/network2.png)
+![](network2.png)
 
 
 
