@@ -1,3 +1,16 @@
+---
+title: Consul原理浅谈
+date: "2019-04-18"
+description: ""
+image: "../title.png"
+---
+要想了解Consul的实现原理，就得先理解Consul是用来做什么的。
+
+从Consul用途出发，才能更好地理解它的原理
+
+<!--more-->
+
+
 <!-- TOC -->
 
 - [1. 背景](#1-%E8%83%8C%E6%99%AF)
@@ -14,8 +27,6 @@
 <!-- /TOC -->
 
 # 1. 背景
-要想了解Consul的实现原理，就得先理解Consul是用来做什么的
-
 ## 1.1. consul提供什么功能
 按照Consul的[官方文档](https://www.consul.io/intro/index.html)，它主要提供以下功能：
 
@@ -75,7 +86,7 @@
 ## 2.2. 架构分析
 然后，我们可以看看Consul官方提供的架构图了
 
-![](/assets/consul1.png)
+![](consul1.png)
 
 
 ### 2.2.1. 多数据中心
@@ -86,7 +97,7 @@
 ### 2.2.2. Server && Client
 下面我们通过观察使用Consul作服务注册的流程，来了解在一个数据中心中，server和client具体的角色：
 
-![](/assets/consul2.jpg)
+![](consul2.jpg)
 
 （图片转自http://developer.51cto.com/art/201812/589424.htm）
 

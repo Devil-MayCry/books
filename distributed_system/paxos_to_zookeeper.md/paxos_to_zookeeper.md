@@ -1,3 +1,14 @@
+---
+title: 《从Paxos到zookeeper分布式一致性原理与实践》学习笔记
+date: "2019-03-30"
+description: ""
+image: "../bitcoin.jpeg"
+---
+ 阅读《从Paxos到zookeeper》的一些笔记记录.
+ 
+ 虽然主要是讲Zookeeper使用的，但前几章对分布式体系和历史的介绍很赞
+<!--more-->
+
 # 第一章：分布式架构
 
 * ACID:事务需要满足的原子性，一致性，隔离性，持久性

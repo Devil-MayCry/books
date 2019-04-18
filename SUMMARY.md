@@ -1,12 +1,12 @@
 # Summary
 
 * [概要](README.md)
-* [分布式技术知识](fen-bu-shi-ji-zhu-zhi-shi.md)
-  * [概论](fen-bu-shi-ji-zhu-zhi-shi/gai-lun.md)
-  * [从paxos到zookeeper](fen-bu-shi-ji-zhu-zhi-shi/cong-paxos-dao-zookeeper.md)
-  * [分布式系统-概念与设计](fen-bu-shi-ji-zhu-zhi-shi/fen-bu-shi-xi-7edf-gai-nian-yu-she-ji.md)
-  * [区块链核心算法解析](fen-bu-shi-ji-zhu-zhi-shi/qu-kuai-lian-he-xin-suan-fa-jie-xi.md)
-  * [consul实现原理](fen-bu-shi-ji-zhu-zhi-shi/consulshi-xian-yuan-li.md)
+* [分布式技术知识](distributed_system.md)
+  * [概论](distributed_system/gai-lun.md)
+  * [从paxos到zookeeper](distributed_system/paxos_to_zookeeper/paxos_to_zookeeper.md)
+  * [分布式系统-概念与设计](distributed_system/fen-bu-shi-xi-7edf-gai-nian-yu-she-ji.md)
+  * [区块链核心算法解析](distributed_system/qu-kuai-lian-he-xin-suan-fa-jie-xi.md)
+  * [consul实现原理](distributed_system/consulshi-xian-yuan-li.md)
 * [数据库知识](shu-ju-ku-zhi-shi.md)
   * [mysql](shu-ju-ku-zhi-shi/mysql.md)
   * [Redis](shu-ju-ku-zhi-shi/redis.md)
