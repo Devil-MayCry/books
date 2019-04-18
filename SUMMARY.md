@@ -2,7 +2,7 @@
 
 * [概要](README.md)
 * [分布式技术知识](distributed_system.md)
-  * [概论](distributed_system/gai-lun.md)
+  * [概论](distributed_system/overview/overview.md)
   * [从paxos到zookeeper](distributed_system/paxos_to_zookeeper/paxos_to_zookeeper.md)
   * [分布式系统-概念与设计](distributed_system/fen-bu-shi-xi-7edf-gai-nian-yu-she-ji.md)
   * [区块链核心算法解析](distributed_system/qu-kuai-lian-he-xin-suan-fa-jie-xi.md)

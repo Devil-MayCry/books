@@ -69,13 +69,13 @@
 
 主从结构部署已经能很好的满足大多数业务场景，但是在微博这种存在突发热点引起流量骤增的业务场景下仍然存在一定的问题，这种方式并不能很方便的进行横向扩展，如果直接在原有的缓存中增加新的节点，就需要涉及到数据迁移等工作。为了解决横向扩展的问题，增加了L1 Cache，实现了多级缓存，L1 Cache的容量一般小于Master容量，也就是说L1 Cache中的数据热度要更高；同时L1 Cache可以有多组，需要横向扩展的时候，只需要成组扩容L1 Cache即可，如图
 
-![](/assets/kuozhan.png)
+![](kuozhan.png)
 
 cache
 
 在L1 Cache这种结构下，Master/Slave的访问量会小很多，会出现Master/Slave数据变冷的情况，为了改善这种情况，我们把Master/Slave在逻辑上也作为L1 Cache的一组，这样就保证了Master/Slave的热度。如图8，是把Master作为L1的一组。
 
-![](/assets/kuozhan2.png)
+![](kuozhan2.png)
 
 master作为L1 cache
 
@@ -133,7 +133,7 @@ AP \(availability + partition tolerance\)，这样的系统关心可用性和分
 
 在谷歌的Transaction Across DataCenter 视频中，我们可以看到下面这样的图。这个是 CAP 理论在具体工程中的体现。
 
-![](/assets/import.png)
+![](import.png)
 
 * ## 分布式事务，Raft，Paxos
 
