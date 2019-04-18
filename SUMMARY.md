@@ -12,7 +12,6 @@
 * [计算机基础类](basic/basic.md)
   * [Go学习笔记](basic/go/go.md)
     * [channel和panic原理](basic/go/channel_and_panic.md)
-  * [Go语言学习笔记](basic/goyu-yan-xue-xi-bi-ji.md)
   * [深入理解计算机系统](basic/shen-ru-li-jie-ji-suan-ji-xi-tong.md)
   * [字符串匹配KMP算法](basic/kmp/kmp.md)
   * [pprof和火焰图](basic/pprofhe-huo-yan-tu.md)
