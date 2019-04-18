@@ -3,6 +3,8 @@ title: Go语言中 Channel & Panic 实现原理
 date: "2019-04-18"
 description: ""
 image: "../go.jpeg"
+url: /blog/go/
+image: "/blog/go/go.jpeg"
 ---
 Channel和Panic算是Go语言中比较重要的特性，体现了Go语言的设计思想。这也让Channel和Panic的原理成为面试中常见的问题之一
 

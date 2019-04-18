@@ -2,7 +2,8 @@
 title: 《黑天鹅》
 date: "2018-08-22"
 description: ""
-image: "../black_swan.jpeg"
+url: /blog/black_swan/
+image: "/blog/black_swan/black_swan.jpeg"
 ---
 《黑天鹅》试图告诉我们: 世界是极端的.
 <!--more-->

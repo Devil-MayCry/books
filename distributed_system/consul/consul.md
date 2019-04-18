@@ -2,7 +2,8 @@
 title: Consul原理浅谈
 date: "2019-04-18"
 description: ""
-image: "../title.png"
+url: /blog/consul/
+image: "/blog/consul/title.png"
 ---
 要想了解Consul的实现原理，就得先理解Consul是用来做什么的。
 
@@ -113,7 +114,8 @@ server与server之间，client与client之间，client与server之间，在同�
 
 ### 2.2.3. 总结
 到这里可以总结一下了：
-* 所有的server节点共同组成了一个集群，他们之间运行raft协议，通过共识仲裁选举出leader。
+
+*  所有的server节点共同组成了一个集群，他们之间运行raft协议，通过共识仲裁选举出leader。
 * Consul client通过rpc的方式将请求转发到Consul server ，Consul server 再将请求转发到 server leader，server leader处理所有的请求，并将信息同步到其他的server中去。
 * 所有的业务数据都通过leader写入到集群中做持久化，当有半数以上的节点存储了该数据后，server集群才会返回ACK，从而保障了数据的强一致性。
 * server数量大了之后，也会影响写数据的效率。所有的follower会跟随leader的脚步，保障其有最新的数据副本。

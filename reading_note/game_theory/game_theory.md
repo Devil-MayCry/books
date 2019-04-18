@@ -2,7 +2,8 @@
 title: 网易公开课《博弈论》笔记
 date: "2019-03-30"
 description: "之前观看网易公开课《博弈论》（耶鲁）的一些笔记记录"
-image: "../gametheroy.jpg"
+image: "/blog/game_theory/game_theory.jpg"
+
 ---
  网易公开课《博弈论》（耶鲁）的一些笔记记录.
 <!--more-->
