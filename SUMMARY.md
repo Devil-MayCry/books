@@ -1,5 +1,4 @@
 # Summary
-
 * [概要](README.md)
 * [分布式技术知识](distributed_system/distributed_system.md)
   * [概论](distributed_system/overview/overview.md)
@@ -7,9 +6,9 @@
   * [分布式系统-概念与设计](distributed_system/fen-bu-shi-xi-7edf-gai-nian-yu-she-ji.md)
   * [区块链核心算法解析](distributed_system/qu-kuai-lian-he-xin-suan-fa-jie-xi.md)
   * [consul实现原理](distributed_system/consul/consul.md)
-* [数据库知识](shu-ju-ku-zhi-shi.md)
-  * [mysql](shu-ju-ku-zhi-shi/mysql.md)
-  * [Redis](shu-ju-ku-zhi-shi/redis.md)
+* [数据库知识](db/db.md)
+  * [mysql](db/mysql.md)
+  * [Redis](db/redis.md)
 * [计算机基础类](basic/basic.md)
   * [Go语言学习笔记](basic/goyu-yan-xue-xi-bi-ji.md)
   * [深入理解计算机系统](basic/shen-ru-li-jie-ji-suan-ji-xi-tong.md)
