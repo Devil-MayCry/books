@@ -61,8 +61,8 @@
 首先我们来了解一下关键术语：
 
 * **Agent**——agent是一直运行在Consul集群中每个成员上的守护进程。通过运行 consul agent 来启动。agent可以运行在client或者server模式。指定节点作为client或者server是非常简单的，除非有其他agent实例。所有的agent都能运行DNS或者HTTP接口，并负责运行时检查和保持服务同步。
-* **Client**——一个Client是一个转发所有RPC到server的代理。这个client是相对无状态的。client唯一执行的后台活动是加入LAN gossip池。这有一个最低的资源开销并且仅消耗少量的网络带宽。
-* **Server**——一个server是一个有一组扩展功能的代理，这些功能包括参与Raft选举，维护集群状态，响应RPC查询，与其他数据中心交互WAN gossip和转发查询给leader或者远程数据中心。
+* **Client**——一个Client是一个转发所有RPC到server的代理。这个client是相对无状态的。client唯一执行的后台活动是加入LAN gossip池。这有一个最低的资源开销并且仅消耗少量的网络带宽。在每个数据中心内，可能包含可以高达上千个的Consul client。
+* **Server**——一个server是一个有一组扩展功能的代理，这些功能包括参与Raft选举，维护集群状态，响应RPC查询，与其他数据中心交互WAN gossip和转发查询给leader或者远程数据中心。一个数据中心集群中，一般包含3个或5个（官方推荐）的Consul sever。会选举出一个leader，而其他的server叫作follower
 * **DataCenter**——虽然数据中心的定义是显而易见的，但是有一些细微的细节必须考虑。例如，在EC2中，多个可用区域被认为组成一个数据中心？我们定义数据中心为一个私有的，低延迟和高带宽的一个网络环境。这不包括访问公共网络，但是对于我们而言，同一个EC2中的多个可用区域可以被认为是一个数据中心的一部分。
 * **Consensus**——在我们的文档中，我们使用Consensus来表明就leader选举和事务的顺序达成一致。由于这些事务都被应用到有限状态机上，Consensus暗示复制状态机的一致性。
 * **Gossip**——Consul建立在Serf的基础之上，它提供了一个用于多播目的的完整的gossip协议。Serf提供成员关系，故障检测和事件广播。更多的信息在gossip文档中描述。这足以知道gossip使用基于UDP的随机的点到点通信。
@@ -84,22 +84,29 @@
 **Consul多个数据中心之间基于WAN来做同步**
 
 ### 2.2.2. Server && Client
-我们再通过一张图来了解一下一个数据中心中，server和client具体的角色：
+下面我们通过观察使用Consul作服务注册的流程，来了解在一个数据中心中，server和client具体的角色：
+
 ![](/assets/consul2.jpg)
+
 （图片转自http://developer.51cto.com/art/201812/589424.htm）
 
-可以看到，在单个数据中心中，Consul 分为 Client 和 Server 两种节点（所有的节点也被称为 Agent），Server 节点保存数据，Client 负责健康检查及转发数据请求到 Server。
+在单个数据中心中，Consul 分为 Client 和 Server 两种节点（所有的节点也被称为 Agent）。可以看到，各个业务服务进行服务注册时，直接接触的只有Consul Client。Client再将数据转发给Server-Follwer，最后统一交由Server-Leader处理。
 
-在每个数据中心内，包含可以高达上千个的Consul client，以及3个或5个（官方推荐）的Consul sever，在Consul sever中又选举出一个leader，其他的server叫作follower，Leader。server和client之间，还有一条LAN GOSSIP通信，这是用于当LAN内部发生了拓扑变化时，存活的节点们能够及时感知，比如server节点down掉后，client就会触发将对应server节点从可用列表中剥离出去。这也就是第二个重要的点：
+**简单来说就是：Server 节点保存数据，Client 负责健康检查及转发数据请求到 Server。**
+
+server和client之间，还有一条LAN GOSSIP通信，这是用于当LAN内部发生了拓扑变化时，存活的节点们能够及时感知，比如server节点down掉后，client就会触发将对应server节点从可用列表中剥离出去。这也就是第二个重要的点：
 
 **集群内的 Consul 节点通过 gossip 协议（流言协议）维护成员关系**
 
-当然，server与server之间，client与client之间，client与server之间，在同一个datacenter中的所有consul agent会组成一个LAN网络（当然它们之间也可以按照区域划分segment），当LAN网中有任何角色变动，或者有用户自定义的event产生的时候，其他节点就会感知到，并触发对应的预置操作。
+server与server之间，client与client之间，client与server之间，在同一个datacenter中的所有consul agent会组成一个LAN网络（当然它们之间也可以按照区域划分segment），当LAN网中有任何角色变动，或者有用户自定义的event产生的时候，其他节点就会感知到，并触发对应的预置操作。
 
 ### 2.2.3. 总结
-总结一下，所有的server节点共同组成了一个集群，他们之间运行raft协议，通过共识仲裁选举出leader。Consul client通过rpc的方式将请求转发到Consul server ，Consul server 再将请求转发到 server leader，server leader处理所有的请求，并将信息同步到其他的server中去。所有的业务数据都通过leader写入到集群中做持久化，当有半数以上的节点存储了该数据后，server集群才会返回ACK，从而保障了数据的强一致性。当然，server数量大了之后，也会影响写数据的效率。所有的follower会跟随leader的脚步，保障其有最新的数据副本。
-
-最后补充一下，当一个数据中心的server没有leader的时候，请求会被转发到其他的数据中心的Consul server上，然后再转发到本数据中心的server leader上
+到这里可以总结一下了：
+* 所有的server节点共同组成了一个集群，他们之间运行raft协议，通过共识仲裁选举出leader。
+* Consul client通过rpc的方式将请求转发到Consul server ，Consul server 再将请求转发到 server leader，server leader处理所有的请求，并将信息同步到其他的server中去。
+* 所有的业务数据都通过leader写入到集群中做持久化，当有半数以上的节点存储了该数据后，server集群才会返回ACK，从而保障了数据的强一致性。
+* server数量大了之后，也会影响写数据的效率。所有的follower会跟随leader的脚步，保障其有最新的数据副本。
+* 当一个数据中心的server没有leader的时候，请求会被转发到其他的数据中心的Consul server上，然后再转发到本数据中心的server leader上
 
 
 
