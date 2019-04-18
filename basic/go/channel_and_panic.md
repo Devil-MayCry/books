@@ -8,13 +8,11 @@ Channel和Panic算是Go语言中比较重要的特性，体现了Go语言的设�
 
 <!--more-->
 
-# Go 语言**学习笔记**
+# Channel
 
-#### 
+## channel实现原理
 
-### channel实现原理
-
-#### chan数据结构
+### chan数据结构
 
 `src/runtime/chan.go:hchan`定义了channel的数据结构：
 
@@ -36,7 +34,7 @@ type hchan struct {
 
 从数据结构可以看出channel由队列、类型信息、goroutine等待队列组成，下面分别说明其原理。
 
-##### 2.1 环形队列
+#### 2.1 环形队列
 
 chan内部实现了一个环形队列作为其缓冲区，队列的长度是创建chan时指定的。
 
@@ -50,7 +48,7 @@ chan内部实现了一个环形队列作为其缓冲区，队列的长度是创�
 * sendx指示后续写入的数据存储的位置，取值\[0, 6\)；
 * recvx指示从该位置读取数据, 取值\[0, 6\)；
 
-##### 2.2 等待队列
+#### 2.2 等待队列
 
 从channel读数据，如果channel缓冲区为空或者没有缓冲区，当前goroutine会被阻塞。  
 向channel写数据，如果channel缓冲区已满或者没有缓冲区，当前goroutine会被阻塞。
@@ -66,20 +64,20 @@ chan内部实现了一个环形队列作为其缓冲区，队列的长度是创�
 
 注意，一般情况下recvq和sendq至少有一个为空。只有一个例外，那就是同一个goroutine使用select语句向channel一边写数据，一边读数据。
 
-##### 2.3 类型信息
+#### 2.3 类型信息
 
 一个channel只能传递一种类型的值，类型信息存储在hchan数据结构中。
 
 * elemtype代表类型，用于数据传递过程中的赋值；
 * elemsize代表类型大小，用于在buf中定位元素位置。
 
-##### 2.4 锁
+#### 2.4 锁
 
 一个channel同时仅允许被一个goroutine读写，为简单起见，本章后续部分说明读写过程时不再涉及加锁和解锁。
 
-#### chan读写
+### chan读写
 
-##### 3.1 创建channel
+#### 3.1 创建channel
 
 创建channel的过程实际上是初始化hchan结构。其中类型信息和缓冲区长度由make语句传入，buf的大小则与元素大小和缓冲区长度共同决定。
 
@@ -110,7 +108,7 @@ return
 }
 ```
 
-##### 3.2 向channel写数据
+#### 3.2 向channel写数据
 
 向一个channel中写数据简单过程如下：
 
@@ -121,7 +119,7 @@ return
 简单流程图如下：  
 ![](https://oscimg.oschina.net/oscnet/c4ba40130182bf4264ad458a2f05863bef1.jpg)
 
-##### 3.3 从channel读数据
+#### 3.3 从channel读数据
 
 从一个channel读数据简单过程如下：
 
@@ -133,7 +131,7 @@ return
 简单流程图如下：  
 ![](https://oscimg.oschina.net/oscnet/820d765ece5100b753e5e6c53bff08b7c2d.jpg)
 
-##### 3.4 关闭channel
+#### 3.4 关闭channel
 
 关闭channel时会把recvq中的G全部唤醒，本该写入G的数据位置为nil。把sendq中的G全部唤醒，但这些G会panic。
 
@@ -143,11 +141,11 @@ return
 2. 关闭已经被关闭的channel
 3. 向已经关闭的channel写数据
 
-## panic
+# panic
 
 `panic`和`recover`关键字会在[编译期间](https://link.juejin.im/?target=https%3A%2F%2Fdraveness.me%2Fgolang-compile-intro)被 Go 语言的编译器转换成`OPANIC`和`ORECOVER`类型的节点并进一步转换成`gopanic`和`gorecover`两个运行时的函数调用。
 
-### 数据结构 {#数据结构}
+## 数据结构 {#数据结构}
 
 `panic`在 Golang 中其实是由一个数据结构表示的，每当我们调用一次`panic`函数都会创建一个如下所示的数据结构存储相关的信息：
 
@@ -174,7 +172,7 @@ aborted 表示当前的 panic 是否被强行终止；
 
 从数据结构中的`link`字段我们就可以推测出以下的结论 —`panic`函数可以被连续多次调用，它们之间通过`link`的关联形成一个链表。
 
-### 崩溃 {#崩溃}
+## 崩溃 {#崩溃}
 
 首先了解一下没有被`recover`的`panic`函数是如何终止整个程序的，我们来看一下`gopanic`函数的实现
 
@@ -262,7 +260,7 @@ func fatalpanic(msgs *_panic) {
 
 在`fatalpanic`函数的最后会通过`exit`退出当前程序并返回错误码`2`，不同的操作系统其实对`exit`函数有着不同的实现，其实最终都执行了`exit`系统调用来退出程序。
 
-### 恢复 {#恢复}
+## 恢复 {#恢复}
 
 到了这里我们已经掌握了`panic`退出程序的过程，但是一个`panic`的程序也可能会被`defer`中的关键字`recover`恢复，在这时我们就回到`recover`关键字对应函数`gorecover`的实现了：
 
