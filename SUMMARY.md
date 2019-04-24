@@ -8,7 +8,7 @@
   * [consul实现原理](distributed_system/consul/consul.md)
   * [kafka](distributed_system/kafka/kafka.md)
     * [Kafka概念介绍与原理剖析](distributed_system/kafka/kafka.md)
-    * [Kafka持久化介绍](distributed_system/kafka/kafka-ack.md)
+    * [Kafka持久化原理](distributed_system/kafka/kafka-ack.md)
 * [数据库知识](db/db.md)
   * [mysql](db/mysql.md)
   * [Redis](db/redis.md)
