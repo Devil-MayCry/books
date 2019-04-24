@@ -6,7 +6,7 @@
   * [分布式系统-概念与设计](distributed_system/fen-bu-shi-xi-7edf-gai-nian-yu-she-ji.md)
   * [区块链核心算法解析](distributed_system/qu-kuai-lian-he-xin-suan-fa-jie-xi.md)
   * [consul实现原理](distributed_system/consul/consul.md)
-  * [kafka](distributed_system/kafka/consul.md)
+  * [kafka](distributed_system/kafka/kafka.md)
     * [Kafka概念介绍与原理剖析](distributed_system/kafka/kafka.md)
     * [Kafka持久化介绍](distributed_system/kafka/kafka-ack.md)
 * [数据库知识](db/db.md)
