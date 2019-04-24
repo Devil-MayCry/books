@@ -1,5 +1,5 @@
 ---
-title: Kafka 持久化原理
+title: Kafka 持久化原理（转）
 date: "2019-04-24"
 description: ""
 url: /blog/kafka/
