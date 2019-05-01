@@ -11,7 +11,7 @@ image: "/blog/keepalive/title.jpeg"
 ### TCP长连接
 ### HTTP长连接
 ### 连接池
-### Golang中国 net/http 库对请求的处理
+### Go语言 net/http 库对请求的处理
 
 
 
