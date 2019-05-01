@@ -5,5 +5,5 @@ description: ""
 url: /blog/keepalive/
 image: "/blog/keepalive/title.jpeg"
 ---
-最近在复盘研究去年压测期间出现的一些网络问题时，重新对HTTP和TCP连接进行了深入学习，也对压测期间当时觉得"诡异"的问题有了新的理解
+最近在复盘研究去年压测期间出现的一些网络问题时，重新对HTTP和TCP连接进行了深入学习，也对压测期间觉得"诡异"的问题有了新的理解
 <!--more-->
