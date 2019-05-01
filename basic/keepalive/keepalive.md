@@ -26,11 +26,15 @@ image: "/blog/keepalive/title.jpeg"
 
 ### TCP连接
 众所周知，采用TCP协议进行网络通信时，在真正的读写操作之前，server与client之间必须建立一个连接，这也是我们常说的**"三次握手"**
+
+
+#### TCP短连接
+让我们先看看短连接的情况：
+client向server发起连接请求，server接到请求，然后双方建立连接。client向server发送消息，server回应client，然后一次读写就完成了，这时候双方任何一个都可以发起close操作，不过一般都是client先发起close操作（一般的server不会回复完client后立即关闭连接的）。短连接一般只会在client/server间传递一次读写操作
+
 当读写操作完成后，双方不再需要这个连接时，它们就可以释放这个连接。连接的建立需要三次握手，而释放则需要4次握手，所以说每个连接的建立和释放都是需要消耗资源和时间的。
 
-#### 短连接
-让我们先看看短连接的情况：
-client向server发起连接请求，server接到请求，然后双方建立连接。client向server发送消息，server回应client，然后一次读写就完成了，这时候双方任何一个都可以发起close操作，不过一般都是client先发起close操作。为什么呢，一般的server不会回复完client后立即关闭连接的，当然不排除有特殊的情况。短连接一般只会在client/server间传递一次读写操作
+#### TCP长连接
 
 
 当我们使用长连接时，client向server发起连接，server接受client连接，双方建立连接。Client与server完成一次读写之后，**它们之间的连接并不会主动关闭**，后续的读写操作会继续使用这个连接。
