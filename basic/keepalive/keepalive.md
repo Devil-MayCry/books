@@ -163,12 +163,12 @@ ioutil.ReadAll(response.Body)
 我们先看一下Golang官方对Body的注释
 
 
->> The http Client and Transport guarantee that Body is always
->> non-nil, even on responses without a body or responses with
->> a zero-length body. It is the caller's responsibility 
->> close Body. The default HTTP client's Transport may not
->> reuse HTTP/1.x "keep-alive" TCP connections if the Body is
->> not read to completion and closed.
+> The http Client and Transport guarantee that Body is always
+> non-nil, even on responses without a body or responses with
+> a zero-length body. It is the caller's responsibility 
+> close Body. The default HTTP client's Transport may not
+> reuse HTTP/1.x "keep-alive" TCP connections if the Body is
+> not read to completion and closed.
 
 也就是说，response.Body的关闭时调用者的责任。如果结束时Body不close掉，连接会一直处于ESTABLISHED状态，造成连接泄漏。而如果Body数据不全部读取掉，会造成TCP连接无法复用，每次新建连接
 
