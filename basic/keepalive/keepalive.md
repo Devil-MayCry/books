@@ -92,7 +92,6 @@ HTTP长连接看上去和TCP长连接很像，而且功能也很相似，以至�
 
 
 ```go
-
 package main
 
 import (
@@ -110,13 +109,70 @@ func main() {
 		fmt.Printf("error:%s\n", err)
 		return
 	}
-	// 如果Body数据不全部读取掉，会造成TCP连接无法复用，每次新建连接
-	ioutil.ReadAll(response.Body)
 	// 如果结束时Body不close掉，连接会一直处于ESTABLISHED状态，造成连接泄漏
 	defer response.Body.Close()
+	// 如果Body数据不全部读取掉，会造成TCP连接无法复用，每次新建连接
+	ioutil.ReadAll(response.Body)
+	
+	
+}
+```
+我们创建了一个client，使用了默认的Transport，然后进行了一次HTTP请求。看上去平淡无奇，其实每一步都"暗藏玄机"
+Transport可以理解为一个连接池。我们先看看系统默认的Transport，也就是DefaultTransport
+
+```go
+// DefaultTransport is the default implementation of Transport and is
+// used by DefaultClient. It establishes network connections as needed
+// and caches them for reuse by subsequent calls. It uses HTTP proxies
+// as directed by the $HTTP_PROXY and $NO_PROXY (or $http_proxy and
+// $no_proxy) environment variables.
+var DefaultTransport RoundTripper = &Transport{
+	Proxy: ProxyFromEnvironment,
+	DialContext: (&net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+		DualStack: true,
+	}).DialContext,
+	// 最多维持100个空闲连接
+	MaxIdleConns:          100,
+	// 每个连接有90秒的等待时间
+	IdleConnTimeout:       90 * time.Second,
+	TLSHandshakeTimeout:   10 * time.Second,
+	ExpectContinueTimeout: 1 * time.Second,
 }
 
 ```
+先说最重要的一点：**一般情况下，一个服务使用一个Transport即可**。每次请求时都实例化一个Transport会造成大量浪费，并且会造成连接不能复用。
+DefaultTransport会帮你维持100个空闲连接，每个连接有90秒的等待时间。而且yo由于没有设置DisableKeepAlives参数，所以默认开启了HTTP长连接。
+如果需要自定义，可以新建Transport对象。Transport每个值都有默认值，所以只需要设定你要改的值即可。
+
+
+当请求结束后，接下里的两个动作也很重要
+
+```go
+response, err := c.Get("http://baidu.com")
+if err != nil {
+   fmt.Printf("error:%s\n", err)
+   return
+}
+defer response.Body.Close()
+ioutil.ReadAll(response.Body)
+```
+为什么说这两个动作很重要呢，因为这关系到HTTP的复用问题。
+
+我们先看一下Golang官方对Body的注释
+
+
+>> The http Client and Transport guarantee that Body is always
+>> non-nil, even on responses without a body or responses with
+>> a zero-length body. It is the caller's responsibility 
+>> close Body. The default HTTP client's Transport may not
+>> reuse HTTP/1.x "keep-alive" TCP connections if the Body is
+>> not read to completion and closed.
+
+也就是说，response.Body的关闭时调用者的责任。如果结束时Body不close掉，连接会一直处于ESTABLISHED状态，造成连接泄漏。而如果Body数据不全部读取掉，会造成TCP连接无法复用，每次新建连接
+
+
 
 
 
