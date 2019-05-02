@@ -85,6 +85,41 @@ HTTP长连接看上去和TCP长连接很像，而且功能也很相似，以至�
 
 ### Go语言中如何进行HTTP请求
 
+这时候写过Golang的同学可能会问："可是我们平时使用Golang的时候并没有刻意地去使用长连接和连接池呀，也运行得好好的呀" φ(≧ω≦*)♪
+是这样的，不过你是否知道，这是因为Golang从语言层面已经支持了HTTP连接池和长连接，而且我们现在使用的HTTP1.1默认使用的就是HTTP长连接。
+
+让我看一次最普通的HTTP请求
+
+
+``` go
+
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+)
+
+func main() {
+	var c = &http.Client{
+		Transport: http.DefaultTransport,
+	}
+	response, err := c.Get("http://baidu.com")
+	if err != nil {
+		fmt.Printf("error:%s\n", err)
+		return
+	}
+	// 如果Body数据不全部读取掉，会造成TCP连接无法复用，每次新建连接
+	ioutil.ReadAll(response.Body)
+	// 如果结束时Body不close掉，连接会一直处于ESTABLISHED状态，造成连接泄漏
+	defer response.Body.Close()
+}
+
+```
+
+
+
 ### 再看问题
 
 
