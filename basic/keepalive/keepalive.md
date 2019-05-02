@@ -91,7 +91,7 @@ HTTP长连接看上去和TCP长连接很像，而且功能也很相似，以至�
 让我看一次最普通的HTTP请求
 
 
-``` go
+```go
 
 package main
 
