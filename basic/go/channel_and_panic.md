@@ -2,7 +2,6 @@
 title: Go语言中 Channel & Panic 实现原理
 date: "2019-04-18"
 description: ""
-image: "../go.jpeg"
 url: /blog/go/
 image: "/blog/go/go.jpeg"
 ---
