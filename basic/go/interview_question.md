@@ -8,3 +8,4 @@ image: "/blog/go/interview_question.jpeg"
 汇总部分易错Go语言面试题
 
 <!--more-->
+#### 1
