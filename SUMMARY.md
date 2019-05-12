@@ -16,6 +16,7 @@
   * [Go学习笔记](basic/go/go.md)
     * [channel和panic原理](basic/go/channel_and_panic.md)
     * [goroutine深入理解](basic/go/goroutine.md)
+    * [易错面试题](basic/go/interview_question.md)
   * [深入理解计算机系统](basic/shen-ru-li-jie-ji-suan-ji-xi-tong.md)
   * [字符串匹配KMP算法](basic/kmp/kmp.md)
   * [pprof和火焰图](basic/pprofhe-huo-yan-tu.md)
