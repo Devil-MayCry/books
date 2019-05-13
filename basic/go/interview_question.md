@@ -145,11 +145,70 @@ type C struct {
 
 func main() {
 	b := B{}
-	b.say()      //I'm A
+	b.say()      //I'm A   B没有重写say()方法，所以是用的A来调用
 	b.sayReal(b) //I'm B
 
 	c := C{}
 	c.say()      //I'm A
-	c.sayReal(c) //I'm A
+	c.sayReal(c) //I'm A   C没有实现Name接口
 }
 ```
+
+#### 4
+下面代码会输出什么
+``` go
+type Persion interface {
+   say(p []byte)
+   do() (bool)
+}
+type Worker  struct {
+ 
+}
+func (w Worker) say(p []byte) {
+   fmt.Println("worker has some words to say", p)
+}
+func (w Worker) do() (bool) {
+   fmt.Println("just do it ")
+   return true
+}
+func (w Worker) who() {
+   fmt.Println("I am worker")
+}
+//测试
+var p Persion
+w := Worker{}
+ 
+p = w //将对象赋值给接口
+// p = &w //将对象对应的指针赋值给该接口
+ 
+p.say([]byte("i have too many jobs"))
+p.do()
+//p.who() //将会报错，因为接口中没有定义该方法
+``` 
+答案
+``` go
+结果见注释
+go的接口有如下特性：
+（1）实现了接口的定义方法的实例，可以赋值给接口；
+（2）若接口B定义的方法，在A接口中都有，那么也可以将接口B赋值给接口A。
+``` 
+
+
+如果修改后会输出什么
+``` go
+func (w *Worker) do() (bool) {
+   fmt.Println("just do it ")
+   return true
+}
+``` 
+答案
+``` go
+p = &w //正常执行
+p = w //报错
+``` 
+| 类型 | 方法 |
+| ------ | ------ | ------ |
+| 值类型(T)  | 值类型的对象仅仅拥有(T)类型的方法|
+| 指针类型(*T) |	指针类型的对象，可以拥有(T)和(*T)方法|
+	
+
