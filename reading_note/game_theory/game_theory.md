@@ -108,8 +108,6 @@ image: "/blog/game_theory/game_theory.jpg"
 
 ## 第十五讲:
 * 策梅洛定理：
-定理具体内容：
-
 在一个双人游戏中，满足：
 
 > 0. 双人轮流行动
