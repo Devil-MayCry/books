@@ -1,18 +1,22 @@
 ### 索引
 
 #### 聚集索引 和非聚集索引
+
 * 就是以主键创建的索引
 * 非聚集索引就是以非主键创建的索引
 * 聚集索引在叶子节点存储的是表中的数据
 * 非聚集索引在叶子节点存储的是主键和索引列
 
-#### 使用方法
+#### 原理
+
 * 使用非聚集索引查询出数据时，拿到叶子上的主键再去查到想要查找的数据。\(拿到主键再查找这个过程叫做回表\)
 * 在创建多列索引中也涉及到了一种特殊的索引-- 覆盖索引
 * 如果不是聚集索引，叶子节点存储的是主键+列值，最终还是要“回表”，也就是要通过主键再查找一次。这样就会比较慢
 * 覆盖索引就是把要查询出的列和索引是对应的，不做回表操作
 
 #### 最佳实践
+
+* 原则上优先选择区分度高的字段作为索引字段，组合索引中原则上区分度高的字段放在前面
 * 最左前缀匹配原则。这是非常重要、非常重要、非常重要（重要的事情说三遍）的原则，MySQL会一直向右匹配直到遇到范围查询（&gt;,&lt;,BETWEEN,LIKE）就停止匹配。
 * 尽量选择区分度高的列作为索引，区分度的公式是 COUNT\(DISTINCT col\) / COUNT\(\*\)。表示字段不重复的比率，比率越大我们扫描的记录数就越少。
 * 索引列不能参与计算，尽量保持列“干净”。比如，FROM\_UNIXTIME\(create\_time\) = '2016-06-06' 就不能使用索引，原因很简单，B+树中存储的都是数据表中的字段值，但是进行检索时，需要把所有元素都应用函数才能比较，显然这样的代价太大。所以语句要写成 ： create\_time = UNIX\_TIMESTAMP\('2016-06-06'\)
@@ -27,52 +31,63 @@
 * 悲观锁是数据库层面加锁，都会阻塞去等待锁。
 
 ### SQL小贴士
-#### 隐式转换
-有关联的字段，数据类型、字符集保持一致，防止出现隐式转换
-举例（均有order_id单独的索引）：
-1、order表中，order_id为utf8
-2、order_detail表中，order_id为utf8mb4
 
-SQL：
-select * from order as o inner join order_detail as od on o.order_id = od.order_id where od.order_id = ‘KNR5110867275558’; #执行时间400ms（约30w数据），order表不走索引
+#### 隐式转换
+
+有关联的字段，数据类型、字符集保持一致，防止出现隐式转换  
+举例（均有order\_id单独的索引）：  
+1、order表中，order\_id为utf8  
+2、order\_detail表中，order\_id为utf8mb4
+
+SQL：  
+select \* from order as o inner join order\_detail as od on o.order\_id = od.order\_id where od.order\_id = ‘KNR5110867275558’; \#执行时间400ms（约30w数据），order表不走索引
 
 原因：不同字符集或类型，可能触发隐式转换，导致无法走索引
+
 #### GROUP BY
-使用 GROUP BY时，如非必要，后跟ORDER BY NULL
+
+使用 GROUP BY时，如非必要，后跟ORDER BY NULL  
 原因：使用group by时，默认会将得到的结果根据分类字段进行排序
 
-改造前SQL：
-select buyer_id,count(*) as num from order where showcase_id = 999999997 and state = ‘TRADE_CLOSED’ group by buyer_id; #1s,由于默认将结果按照buyer_id排序，导致有文件排序
+改造前SQL：  
+select buyer\_id,count\(\*\) as num from order where showcase\_id = 999999997 and state = ‘TRADE\_CLOSED’ group by buyer\_id; \#1s,由于默认将结果按照buyer\_id排序，导致有文件排序
 
-改造后SQL：
-select buyer_id,count(*) as num from order where showcase_id = 999999997 and state = ‘TRADE_CLOSED’ group by buyer_id order by null; #800ms，显式声明不排序，无文件排序
+改造后SQL：  
+select buyer\_id,count\(\*\) as num from order where showcase\_id = 999999997 and state = ‘TRADE\_CLOSED’ group by buyer\_id order by null; \#800ms，显式声明不排序，无文件排序
 
 补充说明：正常情况下，性能提升不大，但是没有了文件排序。
 
 #### 延时关联
+
 使用limit分页时，使用分页模式（延迟关联）写法
 
-改造前SQL：select * from order where showcase_id = 10008 and ctime >= ‘2018-01-01’ and ctime < ‘2018-04-01’ order by ctime desc limit 100000,20; #700ms
+改造前SQL：select \* from order where showcase\_id = 10008 and ctime &gt;= ‘2018-01-01’ and ctime &lt; ‘2018-04-01’ order by ctime desc limit 100000,20; \#700ms
 
-改造后SQL：select o.* from order as o inner join (select id from order where showcase_id = 10008 and ctime >= ‘2018-01-01’ and ctime < ‘2018-04-01’ order by ctime desc limit 100000,20) as b on o.id = b.id; #170ms
+改造后SQL：select o.\* from order as o inner join \(select id from order where showcase\_id = 10008 and ctime &gt;= ‘2018-01-01’ and ctime &lt; ‘2018-04-01’ order by ctime desc limit 100000,20\) as b on o.id = b.id; \#170ms
 
 原因：limit会逐条扫描，使用延迟关联可以仅扫描索引，而不需要回表扫描
 
 #### 大偏移量查询
+
 偏移量巨大的查询，若无固定条数要求，可采用ID范围分批查询。
 
-1、查询最大最小ID
-select id from order where showcase_id = 10008 order by id asc limit 1
-select id from order where showcase_id = 10008 order by id desc limit 1
+1、查询最大最小ID  
+select id from order where showcase\_id = 10008 order by id asc limit 1  
+select id from order where showcase\_id = 10008 order by id desc limit 1
 
 2、每次查询ID范围为n的数据
 
-select * from order where showcase_id = 10008 and id >= 18 and id < 1018
-select * from order where showcase_id = 10008 and id >= 1018 and id < 2018
+select _ from order where showcase\_id = 10008 and id &gt;= 18 and id &lt; 1018  
+select _ from order where showcase\_id = 10008 and id &gt;= 1018 and id &lt; 2018
+
 #### 独立索引
+
 若某字段查询比重大，除建立联合索引，可为该字段单独创建索引，不但可以减少扫描数据量，而且根据id排序时，可以直接走索引，避免文件排序
 
 #### 其他
+
 * 除分页外，排序尽量由程序完成
 * 若无必要，使用inner join，而不用left join
+
+
 
