@@ -309,3 +309,7 @@ propagateCancel 的含义就是传递cancel，从当前传入的parent开始（�
 * Context的Value相关方法应该传递必须的数据，不要什么数据都使用这个传递
 * Context是线程安全的，可以放心的在多个goroutine中传递
 * 可以把一个 Context 对象传递给任意个数的 gorotuine，对它执行 取消 操作时，所有 goroutine 都会接收到取消信号。
+
+## 参考资料
+[掘金 -《Golang Context深入理解》](https://juejin.im/post/5a6873fef265da3e317e55b6)
+《Go语言并发之道》 -- 中国电力出版社
