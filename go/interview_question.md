@@ -211,4 +211,73 @@ p = w //报错
 | 值类型(T)  | 值类型的对象仅仅拥有(T)类型的方法|
 | 指针类型(*T) |	指针类型的对象，可以拥有(T)和(*T)方法|
 	
+#### 5
+下面代码会输出什么
+``` go
+package main
+
+import "fmt"
+
+func main() {
+	/* 创建切片 */
+	numbers := []int{0, 1, 2, 3, 4, 5, 6, 7, 8}
+	printSlice(numbers)
+	number3 := numbers[2:7]
+	printSlice(number3)
+	number4 := number3[2:5]
+	printSlice(number4)
+}
+
+}
+
+func printSlice(x []int) {
+	fmt.Printf("len=%d cap=%d slice=%v\n", len(x), cap(x), x)
+}
+
+``` 
+答案
+``` go
+//  注意cap的运算规则
+len=9 cap=9 slice=[0 1 2 3 4 5 6 7 8]
+len=5 cap=7 slice=[2 3 4 5 6]
+len=3 cap=5 slice=[4 5 6]
+``` 
+
+#### 6
+下面代码会输出什么
+``` go
+package main
+
+import (
+	"fmt"
+)
+
+type Vertex struct {
+	X, Y float64
+}
+
+var e = &Vertex{
+	X: 11,
+	Y: 22,
+}
+
+func (v *Vertex) Scale() {
+	v = e
+	fmt.Println(v)
+}
+
+func main() {
+	v := Vertex{3, 4}
+	v.Scale()
+	fmt.Println(v)
+}
+
+``` 
+
+答案
+``` go
+//  reciver 可以修改自身的内容，但是无法将自身指向另一个地址
+&{11 22}
+{3 4}
+``` 
 

@@ -34,3 +34,4 @@
   * [goroutine深入理解](go/goroutine.md)
   * [易错面试题](go/interview_question.md)
   * [context深入理解](go/context.md)
+  * [defer深入理解](go/defer.md)
