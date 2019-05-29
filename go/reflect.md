@@ -16,4 +16,17 @@ image: "/blog/go/reflect/title.jpeg"
 * type 包括 static type和concrete type. 简单来说 static type是你在编码是看见的类型(如int、string)，concrete type是runtime系统看见的类型
 * 类型断言能否成功，取决于变量的concrete type，而不是static type. 因此，一个 reader变量如果它的concrete type也实现了write方法的话，它也可以被类型断言为writer.
 
-接下来要讲的反射，就是建立在类型之上的，Golang的指定类型的变量的类型是静态的（也就是指定int、string这些的变量，它的type是static type），在创建变量的时候就已经确定，反射主要与Golang的interface类型相关（它的type是concrete type），只有interface类型才有反射一说。
+而反射，就是建立在类型之上的，Golang的指定类型的变量的类型是静态的（也就是指定int、string这些的变量，它的type是static type），在创建变量的时候就已经确定，反射主要与Golang的interface类型相关（它的type是concrete type），只有interface类型才有反射一说。
+在Golang的实现中，每个interface变量都有一个对应pair，pair中记录了实际变量的值和类型:
+``` bash
+(value, type)
+``` 
+value是实际变量值，type是实际变量的类型。一个interface{}类型的变量包含了2个指针，一个指针指向值的类型【对应concrete type】，另外一个指针指向实际的值【对应value】。
+例如，创建类型为*os.File的变量，然后将其赋给一个接口变量r：
+``` go
+tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
+
+var r io.Reader
+r = tty
+
+``` 
