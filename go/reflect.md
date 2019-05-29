@@ -81,3 +81,5 @@ reflect.ValueOf：直接给到了我们想要的具体的值，如1.2345这个�
 也就是说明反射可以将“接口类型变量”转换为“反射类型对象”，反射类型指的是reflect.Type和reflect.Value这两种
 */
 ``` 
+### 从relfect.Value中获取接口interface的信息
+
