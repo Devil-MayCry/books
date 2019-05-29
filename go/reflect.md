@@ -187,5 +187,4 @@ Name: string = Allen.Wu
 Age: int = 25
 ReflectCallFunc: func(main.User)
 
-
 ``` 
