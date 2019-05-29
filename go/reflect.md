@@ -141,12 +141,12 @@ type User struct {
 }
 
 func (u User) ReflectCallFunc() {
-	fmt.Println("Allen.Wu ReflectCallFunc")
+	fmt.Println("ReflectCallFunc")
 }
 
 func main() {
 
-	user := User{1, "Allen.Wu", 25}
+	user := User{1, "Enix", 25}
 
 	DoFiledAndMethod(user)
 
@@ -188,3 +188,16 @@ Age: int = 25
 ReflectCallFunc: func(main.User)
 
 ``` 
+**说明**
+通过运行结果可以得知获取未知类型的interface的具体变量及其类型的步骤为：
+* 先获取interface的reflect.Type，然后通过NumField进行遍历
+* 再通过reflect.Type的Field获取其Field
+* 最后通过Field的Interface()得到对应的value
+
+通过运行结果可以得知获取未知类型的interface的所属方法（函数）的步骤为：
+
+* 先获取interface的reflect.Type，然后通过NumMethod进行遍历
+* 再分别通过reflect.Type的Method获取对应的真实的方法（函数）
+* 最后对结果取其Name和Type得知具体的方法名
+* 也就是说反射可以将“反射类型对象”再重新转换为“接口类型变量”
+* struct 或者 struct 的嵌套都是一样的判断处理方式
