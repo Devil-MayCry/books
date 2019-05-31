@@ -231,10 +231,10 @@ const (
 )
 ``` 
 互斥锁有两种操作模式：正常模式和饥饿模式。</br>
-在正常模式下等待获取锁的goroutine会以一个先进先出的方式进行排队，但是被唤醒的等待者并不能代表它已经拥有了这个mutex锁，它需要与新到达的goroutine争夺mutex锁。新来的goroutine有一个优势 —— 他们已经在CPU上运行了并且他们，所以抢到的可能性大一些，所以一个被唤醒的等待者有很大可能抢不过。在这样的情况下，被唤醒的等待者在队列的头部。如果一个等待者抢锁超过1ms失败了，就会切换为饥饿模式。</br>
+在正常模式下等待获取锁的goroutine会以一个先进先出的方式进行排队，但是被唤醒的等待者并不能代表它已经拥有了这个mutex锁，它需要与新到达的goroutine争夺mutex锁。新来的goroutine有一个优势 —— 他们已经在CPU上运行，所以抢到的可能性大一些，所以一个被唤醒的等待者有很大可能抢不过。在这样的情况下，被唤醒的等待者在队列的头部。如果一个被唤醒的等待者抢锁超过1ms失败了，就会切换为饥饿模式。</br>
 </br>
 在饥饿模式下，mutex锁会直接由解锁的goroutine交给队列头部的等待者。</br>
-新来的goroutine不能尝试去获取锁，即使可能根本就没goroutine在持有锁，并且不能尝试自旋。取而代之的是他们只能排到队伍尾巴上乖乖等着。</br>
+新来的goroutine不能尝试去获取锁，即使可能根本就没goroutine在持有锁，并且不能尝试自旋。他们只能排到队伍尾巴等着。</br>
 </br>
 如果一个等待者获取到了锁，并且遇到了下面两种情况之一，就恢复成正常工作模式。</br>
 情况1：它是最后一个队列中的等待者。</br>
@@ -305,10 +305,12 @@ func (m *Mutex) Lock() {
 	for {
 		// Don't spin in starvation mode, ownership is handed off to waiters
 		// so we won't be able to acquire the mutex anyway.
+		// 如果不是饥饿模式，就会进行自旋操作，然后不断循环
 		if old&(mutexLocked|mutexStarving) == mutexLocked && runtime_canSpin(iter) {
 			// Active spinning makes sense.
 			// Try to set mutexWoken flag to inform Unlock
 			// to not wake other blocked goroutines.
+			// awoke表示是否唤醒，old&mutexWoken是取第二位，0表示当前协程未被唤醒，old>>mutexWaiterShift表示右移3位，也就是前29位，不为0证明有协程在等待，并且尝试去对比当前m.state与取出时的old状态，尝试去唤醒自己。然后自旋，并且增加自旋次数表示iter，然后重新赋值old。再循环下一次。
 			if !awoke && old&mutexWoken == 0 && old>>mutexWaiterShift != 0 &&
 				atomic.CompareAndSwapInt32(&m.state, old, old|mutexWoken) {
 				awoke = true
@@ -332,17 +334,15 @@ mutexLocked = 1</br>
 </br>
 if !awoke && old&mutexWoken == 0 && old>>mutexWaiterShift != 0 &&
 </br>
-同样的分析，awoke表示是否唤醒，old&mutexWoken是取第二位，0表示当前协程未被唤醒，old>>mutexWaiterShift表示右移3位，也就是前29位，不为0证明有协程在等待，并且尝试去对比当前m.state与取出时的old状态，尝试去唤醒自己。然后自旋，并且增加自旋次数表示iter，然后重新赋值old。再循环下一次。
-</br>
-（你自己理一理，确实有点绕，仔细想想就想通了就对了。）
-</br>
 以上是使用自旋的情况，就是canSpin的。
 ``` go
 		new := old
 		// Don't try to acquire starving mutex, new arriving goroutines must queue.
+		// 然后进行判断第三位为0的情况，还是所说的正常模式。new就马上拿到锁了，new |= mutexLocked，表示或1，就是第一位无论是啥都赋值为1
 		if old&mutexStarving == 0 {
 			new |= mutexLocked
 		}
+		// 必须当old的1和3两个位置为1的时候才是true，也就是说当前处于饥饿模式，并且锁已经被占用的情况，那么就需要排队去。
 		if old&(mutexLocked|mutexStarving) != 0 {
 			new += 1 << mutexWaiterShift
 		}
