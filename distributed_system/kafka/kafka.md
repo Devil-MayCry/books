@@ -15,11 +15,7 @@ Kafka的一些知识汇总
 - broker：缓存代理，kafka集群中的一台或多台服务器统称为broker,一个broker可以容纳多个topic
 - Partition:Topic物理上的分组，为了实现扩展性，一个非常大的topic可以分布到多个broker(服务器)上，一个topic可以分为多个partition,每个partition是一个有序的队列。partition中的每条消息都会被分配一个有序的Id(offset).kafka只保证一个partition中的顺序将消息发送给consumer，不保证一个topic的整体(多个partition间)的顺序，也就是说，一个topic在集群中可以有多个partition,那么分区的策略是什么？(消息发送到哪个分区上，有两种策略，一是采用Key Hash算法，二是采用Round Robin算法)
 
-
-
-{% alert info %}
-除了上面几个概念，还有一个也非常重要，那就是 `zookeeper`。
-{% endalert %}
+> 除了上面几个概念，还有一个也非常重要，那就是 `zookeeper`。
 
 
 1) `Producer` 端使用 `zookeeper` 用来发现 `broker` 列表，以及和 `Topic` 下每个 `partition leader` 建立 `socket` 连接并发送消息。
@@ -50,10 +46,7 @@ Kafka的一些知识汇总
 
 2.没填 `key`：`round-robin` 来选 `partition`。
 
-{% alert info %}
-这些要发往同一个 `partition` 的请求按照配置，攒一波，然后由一个单独的线程一次性发过去。
-{% endalert %}
-
+> 这些要发往同一个 `partition` 的请求按照配置，攒一波，然后由一个单独的线程一次性发过去。
 
 #### 三、Kafka 设计原理
 `Kafka` 的设计初衷是希望作为一个统一的信息收集平台，能够实时的收集反馈信息，并需要能够支撑较大的数据量，且具备良好的容错能力。
@@ -61,9 +54,7 @@ Kafka的一些知识汇总
 1.持久性
 `kafka` 使用文件存储消息，这就直接决定 `kafka` 在性能上严重依赖文件系统的本身特性.且无论任何 `OS` 下，对文件系统本身的优化几乎没有可能。
 
-{% alert info %}
-文件缓存/直接内存映射等是常用的手段。
-{% endalert %}
+> 文件缓存/直接内存映射等是常用的手段。
 
 因为 `kafka` 是对日志文件进行 `append` 操作，因此磁盘检索的开支是较小的。同时为了减少磁盘写入的次数，`broker` 会将消息暂时 `buffer` 起来，当消息的个数(或尺寸)达到一定阀值时，再 `flush` 到磁盘，这样减少了磁盘`IO` 调用的次数。
 
@@ -75,10 +66,7 @@ Kafka的一些知识汇总
 
 其实对于 `producer/consumer/broker` 三者而言，`CPU` 的开支应该都不大，因此启用消息压缩机制是一个良好的策略。压缩需要消耗少量的 `CPU` 资源，不过对于 `kafka` 而言，网络 `IO` 更应该需要考虑。可以将任何在网络上传输的消息都经过压缩。
 
-{% alert info %}
-`kafka` 支持 `gzip/snappy` 等多种压缩方式。
-{% endalert %}
-
+> `kafka` 支持 `gzip/snappy` 等多种压缩方式。
 
 3.生产者
 负载均衡: `producer` 将会和 `Topic` 下所有 `partition leader` 保持 `socket` 连接。消息由 `producer` 直接通过 `socket` 发送到 `broker` ，中间不会经过任何路由层。
@@ -90,16 +78,12 @@ Kafka的一些知识汇总
 
 5.消息传送机制
 对于 `JMS` 实现，消息传输担保非常直接：有且只有一次(exactly once)。在 `kafka` 中稍有不同：
-- at most once: 最多一次，这个和 `JMS` 中 「非持久化」消息类似。发送一次，无论成败，将不会重发。
-- at least once: 消息至少发送一次，如果消息未能接受成功，可能会重发，直到接收成功。
-- exactly once: 消息只会发送一次。
-- at most once: 消费者 `fetch` 消息，然后保存 `offset`，然后处理消息。当 `client` 保存 `offset` 之后，但是在消息处理过程中出现了异常，导致部分消息未能继续处理。那么此后「未处理」的消息将不能被 `fetch` 到。
-- at least once: 消费者 `fetch` 消息，然后处理消息，然后保存 `offset`。如果消息处理成功之后，但是在保存`offset` 阶段 `zookeeper` 异常导致保存操作未能执行成功，这就导致接下来再次 `fetch` 时可能获得上次已经处理过的消息，原因 `offset` 没有及时的提交给 `zookeeper`，`zookeeper` 恢复正常还是之前 `offset` 状态。
-- exactly once: `kafka` 中并没有严格的去实现(基于2阶段提交，事务)，我们认为这种策略在 `kafka` 中是没有必要的。
+- at most once: 最多一次，这个和 `JMS` 中 「非持久化」消息类似。发送一次，无论成败，将不会重发。<br>消费者 `fetch` 消息，然后保存 `offset`，然后处理消息。当 `client` 保存 `offset` 之后，但是在消息处理过程中出现了异常，导致部分消息未能继续处理。那么此后「未处理」的消息将不能被 `fetch` 到。
 
-{% alert info %}
-通常情况下「at-least-once」是我们首选。(相比「at most once」而言，重复接收数据总比丢失数据要好)。
-{% endalert %}
+- at least once: 消息至少发送一次，如果消息未能接受成功，可能会重发，直到接收成功。</br>消费者 `fetch` 消息，然后处理消息，然后保存 `offset`。如果消息处理成功之后，但是在保存`offset` 阶段 `zookeeper` 异常导致保存操作未能执行成功，这就导致接下来再次 `fetch` 时可能获得上次已经处理过的消息，原因 `offset` 没有及时的提交给 `zookeeper`，`zookeeper` 恢复正常还是之前 `offset` 状态。
+- exactly once: 消息只会发送一次。</br>`kafka` 中并没有严格的去实现(基于2阶段提交，事务)，我们认为这种策略在 `kafka` 中是没有必要的。
+
+> 通常情况下「at-least-once」是我们首选。(相比「at most once」而言，重复接收数据总比丢失数据要好)。
 
 6.复制备份
 `kafka` 将每个 `partition` 数据复制到多个 `server` 上，任何一个 `partition` 有一个 `leader` 和多个`follower`(可以没有)，备份的个数可以通过 `broker` 配置文件来设定。
