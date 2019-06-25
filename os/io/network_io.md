@@ -190,6 +190,17 @@ int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout
 - `fd` 是要监听的描述符
 - `event` 表示要监听的事件
 
+首先，需要调用epoll_create来创建一个epoll的文件描述符，内核会同时创建一个eventpoll的数据结构。这个数据结构里面会包含两个东西，一个是红黑树，专门用于存储epoll_ctl注册进来的fd文件描述符；另外一个是就绪链表，用来存储epoll_wait调用相关的，已经就绪的那些fd文件描述符。</br>
+
+``` c
+struct eventpoll{
+    struct rb_root  rbr;      //红黑树的根节点，存储着所有添加到epoll中的需要监控的事件
+    struct list_head rdlist;        // 双链表中存放着将要通过epoll_wait返回给用户的满足条件的事件
+};
+```
+
+![](rb_tree.png)
+
 epoll_event 结构体定义如下：</br>
 ``` c
 struct epoll_event {
