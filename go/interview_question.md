@@ -228,7 +228,6 @@ func main() {
 	printSlice(number4)
 }
 
-}
 
 func printSlice(x []int) {
 	fmt.Printf("len=%d cap=%d slice=%v\n", len(x), cap(x), x)
@@ -242,6 +241,38 @@ len=9 cap=9 slice=[0 1 2 3 4 5 6 7 8]
 len=5 cap=7 slice=[2 3 4 5 6]
 len=3 cap=5 slice=[4 5 6]
 ``` 
+
+写出以下打印结果，并解释下为什么这么打印的。
+``` go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	str1 := []string{"a", "b", "c"}
+	str2 := str1[1:]
+	str2[1] = "new"
+	fmt.Println(str1)
+	str2 = append(str2, "z", "x", "y")
+	fmt.Println(str1)
+	str2[1] = "old"
+	fmt.Println(str1)
+}
+
+``` 
+
+``` go
+答案：
+[a b new]
+[a b new]
+[a b new]
+
+append 的结果是一个包含原 slice 所有元素加上新添加的元素的 slice。
+已经不再是原来的那个slice了
+``` 
+
 
 #### 6
 下面代码会输出什么
@@ -281,3 +312,128 @@ func main() {
 {3 4}
 ``` 
 
+#### 7
+下面代码能运行吗？为什么。
+``` go
+type Param map[string]interface{}
+
+type Show struct {
+	Param
+}
+
+func main1() {
+	s := new(Show)
+	s.Param["RMB"] = 10000
+}
+``` 
+
+答案
+``` go
+不能
+map里如果value是结构体，不能修改其值。因为没法寻址
+但如果是结构体指针的话可以
+``` 
+
+
+#### 8
+请说出下面的代码存在什么问题？
+``` go
+type query func(string) string
+
+func exec(name string, vs ...query) string {
+	ch := make(chan string)
+	fn := func(i int) {
+		ch <- vs[i](name)
+	}
+	for i, _ := range vs {
+		go fn(i)
+	}
+	return <-ch
+}
+
+func main() {
+	ret := exec("111", func(n string) string {
+		return n + "func1"
+	}, func(n string) string {
+		return n + "func2"
+	}, func(n string) string {
+		return n + "func3"
+	}, func(n string) string {
+		return n + "func4"
+	})
+	fmt.Println(ret)
+}
+``` 
+
+答案
+``` go
+大概率是  111func4
+但也有可能是其他值
+
+go机制导致大概率为遍历完成后再起协程
+
+``` 
+
+
+#### 9
+请说出下面的代码存在什么问题？
+``` go
+
+package main
+
+import (
+    "fmt"
+)
+
+func main() {
+    fmt.Println([...]string{"1"} == [...]string{"1"})
+    fmt.Println([]string{"1"} == []string{"1"})
+}
+``` 
+
+答案
+``` go
+数组可以比较
+切片不能比较
+map也不能
+``` 
+
+#### 10
+请说出下面的代码存在什么问题？
+``` go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type Girl struct {
+	Name       string `json:"name"`
+	DressColor string `json:"dress_color"`
+}
+
+func (g Girl) SetColor(color string) {
+	g.DressColor = color
+}
+func (g Girl) JSON() string {
+	data, _ := json.Marshal(&g)
+	return string(data)
+}
+func main() {
+	g := Girl{Name: "menglu"}
+	g.SetColor("white")
+	fmt.Println(g.JSON())
+}
+
+``` 
+
+答案
+``` go
+{"name":"menglu","dress_color":""}
+
+g Girl只是形参
+
+改为g *Girl即可
+
+``` 
