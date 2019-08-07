@@ -27,8 +27,8 @@
 
 * 对于UPDATE、DELETE、INSERT语句，InnoDB会自动给涉及数据集加排他锁（X\)
 * MyISAM在执行查询语句SELECT前，会自动给涉及的所有表加读锁，在执行更新操作（UPDATE、DELETE、INSERT等）前，会自动给涉及的表加写锁，这个过程并不需要用户干预
-* 乐观锁是一种思想，具体实现是，表中有一个版本字段，第一次读的时候，获取到这个字段。处理完业务逻辑开始更新的时候，需要再次查看该字段的值是否和第一次的一样。如果一样更新，反之拒绝。之所以叫乐观，因为这个模式没有从数据库加锁，等到更新的时候再判断是否可以更新。
-* 悲观锁是数据库层面加锁，都会阻塞去等待锁。
+* 乐观锁是一种思想，具体实现是，表中有一个版本字段，第一次读的时候，获取到这个字段。处理完业务逻辑开始更新的时候，需要再次查看该字段的值是否和第一次的一样。如果一样更新，反之拒绝。之所以叫乐观，因为这个模式没有从数据库加锁，等到更新的时候再判断是否可以更新。select for updae 宕机会自动释放
+* 悲观锁是数据库层面加锁，都会阻塞去等待锁。 select for update share
 
 ### SQL小贴士
 
@@ -90,26 +90,24 @@ select _ from order where showcase\_id = 10008 and id &gt;= 1018 and id &lt; 201
 * 若无必要，使用inner join，而不用left join
 
 ## 索引失效与优化
+
 ![](index_fail.png)
 
-
-
-
-来源：https://blog.csdn.net/wuseyukui/article/details/72312574
-
+来源：[https://blog.csdn.net/wuseyukui/article/details/72312574](https://blog.csdn.net/wuseyukui/article/details/72312574)
 
 ## orderby索引优化
+
 ①MySQL支持两种方式的排序filesort和index，Using index是指MySQL扫描索引本身完成排序。index效率高，filesort效率低。
 
 ②order by满足两种情况会使用Using index。
 
-- 1.order by语句使用索引最左前列。
+* 1.order by语句使用索引最左前列。
 
-- 2.使用where子句与order by子句条件列组合满足索引最左前列。
+* 2.使用where子句与order by子句条件列组合满足索引最左前列。
 
 ③尽量在索引列上完成排序，遵循索引建立（索引创建的顺序）时的最佳左前缀法则。
 
 ④如果order by的条件不在索引列上，就会产生Using filesort。
 
+[https://www.cnblogs.com/developer\_chan/p/9225638.html](https://www.cnblogs.com/developer_chan/p/9225638.html)
 
-https://www.cnblogs.com/developer_chan/p/9225638.html
