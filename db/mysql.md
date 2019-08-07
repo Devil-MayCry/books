@@ -103,9 +103,9 @@ select _ from order where showcase\_id = 10008 and id &gt;= 1018 and id &lt; 201
 
 ②order by满足两种情况会使用Using index。
 
-#1.order by语句使用索引最左前列。
+- 1.order by语句使用索引最左前列。
 
-#2.使用where子句与order by子句条件列组合满足索引最左前列。
+- 2.使用where子句与order by子句条件列组合满足索引最左前列。
 
 ③尽量在索引列上完成排序，遵循索引建立（索引创建的顺序）时的最佳左前缀法则。
 
