@@ -111,15 +111,9 @@ select _ from order where showcase\_id = 10008 and id &gt;= 1018 and id &lt; 201
 
 [https://www.cnblogs.com/developer\_chan/p/9225638.html](https://www.cnblogs.com/developer_chan/p/9225638.html)
 
-
-
 ## 底层原理
 
 平衡二叉树首先需要符合二叉查找树的定义，其次必须满足任何节点的两个子树的高度差不能大于1。显然图②不满足平衡二叉树的定义，而图①是一课平衡二叉树。平衡二叉树的查找性能是比较高的（性能最好的是最优二叉树），查询性能越好，维护的成本就越大。比如图①的平衡二叉树，当用户需要插入一个新的值9的节点时，就需要做出如下变动。
-
-![](//upload-images.jianshu.io/upload_images/175724-c806af2d9defcbab.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/538/format/webp)
-
-平衡二叉树旋转
 
 通过一次左旋操作就将插入后的树重新变为平衡二叉树是最简单的情况了，实际应用场景中可能需要旋转多次。至此我们可以考虑一个问题，平衡二叉树的查找效率还不错，实现也非常简单，相应的维护成本还能接受，为什么MySQL索引不直接使用平衡二叉树？
 
@@ -127,12 +121,11 @@ select _ from order where showcase\_id = 10008 and id &gt;= 1018 and id &lt; 201
 
 一种行之有效的解决方法是减少树的深度，将二叉树变为m叉树（多路搜索树），而`B+Tree`就是一种多路搜索树。理解`B+Tree`时，只需要理解其最重要的两个特征即可：第一，所有的关键字（可以理解为数据）都存储在叶子节点（`Leaf Page`），非叶子节点（`Index Page`）并不存储真正的数据，所有记录节点都是按键值大小顺序存放在同一层叶子节点上。其次，所有的叶子节点由指针连接。如下图为高度为2的简化了的`B+Tree`。
 
-![](//upload-images.jianshu.io/upload_images/175724-52306456815a0919.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/993/format/webp)
+
+
+
 
 简化B+Tree
 
 怎么理解这两个特征？MySQL将每个节点的大小设置为一个页的整数倍（原因下文会介绍），也就是在节点空间大小一定的情况下，每个节点可以存储更多的内结点，这样每个结点能索引的范围更大更精确。所有的叶子节点使用指针链接的好处是可以进行区间访问，比如上图中，如果查找大于20而小于30的记录，只需要找到节点20，就可以遍历指针依次找到25、30。如果没有链接指针的话，就无法进行区间查找。这也是MySQL使用`B+Tree`作为索引存储结构的重要原因。
-
-  
-
 
