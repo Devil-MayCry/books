@@ -96,3 +96,20 @@ select _ from order where showcase\_id = 10008 and id &gt;= 1018 and id &lt; 201
 
 
 来源：https://blog.csdn.net/wuseyukui/article/details/72312574
+
+
+## orderby索引优化
+①MySQL支持两种方式的排序filesort和index，Using index是指MySQL扫描索引本身完成排序。index效率高，filesort效率低。
+
+②order by满足两种情况会使用Using index。
+
+#1.order by语句使用索引最左前列。
+
+#2.使用where子句与order by子句条件列组合满足索引最左前列。
+
+③尽量在索引列上完成排序，遵循索引建立（索引创建的顺序）时的最佳左前缀法则。
+
+④如果order by的条件不在索引列上，就会产生Using filesort。
+
+
+https://www.cnblogs.com/developer_chan/p/9225638.html
