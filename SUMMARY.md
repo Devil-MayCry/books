@@ -14,6 +14,7 @@
 * [数据库知识](db/db.md)
   * [mysql](db/mysql.md)
   * [Redis](db/redis.md)
+  * [分布式ID](db/id.md)
 * [计算机基础类](basic/basic.md)
   * [深入理解计算机系统](basic/shen-ru-li-jie-ji-suan-ji-xi-tong.md)
   * [字符串匹配KMP算法](basic/kmp/kmp.md)
