@@ -11,6 +11,10 @@
 
 总之：MyISAM的索引方式也叫做“非聚集”的。MyISAM类型不支持事务处理等高级处理，而InnoDB类型支持；MyISAM类型的表强调的是性能，其执行速度比InnoDB类型更快，但是不提供事务支持，而InnoDB提供事务支持已经外部键等高级数据库功能。
 
+### 推荐阅读:
+
+  [https://blog.codinglabs.org/articles/theory-of-mysql-index.html](https://blog.codinglabs.org/articles/theory-of-mysql-index.html)
+
 ### 索引
 
 #### 聚集索引 和非聚集索引

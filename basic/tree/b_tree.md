@@ -47,5 +47,3 @@ B树相对于B+树的优点是，如果经常访问的数据离根节点很近�
 
 
 
-推荐阅读:  [https://blog.codinglabs.org/articles/theory-of-mysql-index.html](https://blog.codinglabs.org/articles/theory-of-mysql-index.html)
-
