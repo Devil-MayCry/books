@@ -6,6 +6,7 @@
   * [Raft算法解析](distributed_system/raft/raft.md)
   * [区块链核心算法解析](block_chain.md)
   * [consul实现原理](distributed_system/consul/consul.md)
+  * [分布式锁](distributed_system/distributed_lock/lock.md)
   * [kafka](distributed_system/kafka.md)
     * [Kafka概念介绍与原理剖析](distributed_system/kafka/kafka.md)
     * [Kafka持久化原理](distributed_system/kafka/kafka-ack.md)
