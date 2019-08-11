@@ -14,6 +14,7 @@
     * [Rabbitmq最佳实践](distributed_system/rabbitmq/best_practice.md)
 * [数据库知识](db/db.md)
   * [mysql](db/mysql.md)
+  * [mysql锁机制](db/lock.md)
   * [Redis](db/redis.md)
   * [分布式ID](db/id.md)
 * [计算机基础类](basic/basic.md)
