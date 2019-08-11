@@ -19,6 +19,7 @@
     * [mysql锁机制](db/mysql/lock.md)
   * [Redis](db/redis.md)
     * [redis基础](db/redis/base.md)
+    * [redis集群](db/redis/cluster.md)
     * [一致性hash](db/redis/hash.md)
 * [计算机基础类](basic/basic.md)
   * [深入理解计算机系统](basic/shen-ru-li-jie-ji-suan-ji-xi-tong.md)
