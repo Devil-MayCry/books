@@ -35,29 +35,10 @@ SET
 至于解锁，为了防止客户端1获得的锁，被客户端2给释放,采用下面的Lua脚本来释放锁
 
 ```
-if
- redis.
-call
-(
-"get"
-,KEYS[
-1
-]) == ARGV[
-1
-] 
-then
-return
- redis.
-call
-(
-"del"
-,KEYS[
-1
-])
-
+if redis.call("get",KEYS[1]) == ARGV[1] then
+    return redis.call("del",KEYS[1])
 else
-return
-0
+    return 0
 end
 ```
 
