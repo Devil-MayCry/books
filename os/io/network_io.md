@@ -245,12 +245,14 @@ epoll_wait在调用时，在给定的timeout时间内，当在监控的所有句
 当你调用epoll_create时，就会在这个虚拟的epoll文件系统里创建一个file结点。当然这个file不是普通文件，它只服务于epoll。epoll在被内核初始化时（操作系统启动），同时会开辟出epoll自己的内核高速cache区，用于安置每一个我们想监控的socket，这些socket会以红黑树的形式保存在内核cache里，以支持快速的查找、插入、删除。
 
 这个内核高速cache区，就是建立连续的物理内存页，然后在之上建立slab层，简单的说，就是物理上分配好你想要的size的内存对象，每次使用时都是使用空闲的已分配好的对象。
-```
+``` c
 static int __init eventpoll_init(void) { 
+    ... ... 
     /* Allocates slab cache used to allocate "struct epitem" items */ 
     epi_cache = kmem_cache_create("eventpoll_epi", sizeof(struct  epitem),0,SLAB_HWCACHE_ALIGN| EPI_SLAB_DEBUG|SLAB_PANIC, NULL, NULL); 
     /* Allocates slab cache used to allocate "struct eppoll_entry" */ 
     pwq_cache = kmem_cache_create("eventpoll_pwq", sizeof(struct eppoll_entry), 0, EPI_SLAB_DEBUG|SLAB_PANIC, NULL, NULL); 
+    ... ...
 ```
 
 
