@@ -256,8 +256,12 @@ Leader将那些没有被各Follower服务器同步的事务以Proposal消息的�
 接下来看看ZAB如何处理那些需要被丢弃的事务Proposal的。
 当选举产生一个新的Leader服务器，就会从这个Leader服务器上取出其本地日志中最大事务Proposal的ZXID，并解析出epoch值，进行加一，作为新的epoch，代表新的周期。
 所以，当一个包含了上一个Leader周期中尚未提交过的事务Proposal的服务器启动时，其肯定无法成为Leader。因为该集群机器中一定包含了更高epoch事务Proposal，因此这台机器Proposal肯定不是最高的。
+当这个机器加入集群后，以Follower的角色连上Leader，Leader会根据自己最后被提交的Proposal来和Follower比对，要求进行回退，到一个已经被半数机器提交的最新Proposal
 
 ## ZAB 与Paxos协议区别
- ZAB协议和Paxos算法的本质区别是，两者的设计目标不一样。ZAB协议主要用于构建一个高可用的分布式**数据主备系统**（保证完整性），而Paxos算法则是用于构建一个分布式的**一致性状态机系统**（保证一致性）
+
+ZAB协议额外添加了一个同步阶段，能够有效保证Leader在新的周期中提出的Proposal之前，所有的进程已经完成了对之前所有Proposal的提交
+
+ 总的来说，ZAB协议和Paxos算法的本质区别是，两者的设计目标不一样。ZAB协议主要用于构建一个高可用的分布式**数据主备系统**（保证完整性），而Paxos算法则是用于构建一个分布式的**一致性状态机系统**（保证一致性）
 
 
