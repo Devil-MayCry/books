@@ -245,14 +245,14 @@ epoll_wait在调用时，在给定的timeout时间内，当在监控的所有句
 当你调用epoll_create时，就会在这个虚拟的epoll文件系统里创建一个file结点。当然这个file不是普通文件，它只服务于epoll。epoll在被内核初始化时（操作系统启动），同时会开辟出epoll自己的内核高速cache区，用于安置每一个我们想监控的socket，这些socket会以红黑树的形式保存在内核cache里，以支持快速的查找、插入、删除。
 
 这个内核高速cache区，就是建立连续的物理内存页，然后在之上建立slab层，简单的说，就是物理上分配好你想要的size的内存对象，每次使用时都是使用空闲的已分配好的对象。
-
+```
 static int __init eventpoll_init(void) { 
-    ... ... 
     /* Allocates slab cache used to allocate "struct epitem" items */ 
     epi_cache = kmem_cache_create("eventpoll_epi", sizeof(struct  epitem),0,SLAB_HWCACHE_ALIGN| EPI_SLAB_DEBUG|SLAB_PANIC, NULL, NULL); 
     /* Allocates slab cache used to allocate "struct eppoll_entry" */ 
     pwq_cache = kmem_cache_create("eventpoll_pwq", sizeof(struct eppoll_entry), 0, EPI_SLAB_DEBUG|SLAB_PANIC, NULL, NULL); 
-    ... ...
+```
+
 
 
 > epoll的高效就在于，当我们调用epoll_ctl往里塞入百万个句柄时，epoll_wait仍然可以飞快的返回，并有效的将发生事件的句柄给我们用户。</br>这是由于我们在调用epoll_create时，内核除了帮我们在epoll文件系统里建了个file结点，在内核cache里建了个红黑树用于存储以后epoll_ctl传来的socket外，还会再建立一个list链表，用于存储准备就绪的事件，当epoll_wait调用时，仅仅观察这个list链表里有没有数据即可。有数据就返回，没有数据就sleep，等到timeout时间到后即使链表没数据也返回。所以，epoll_wait非常高效。
