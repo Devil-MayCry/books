@@ -227,6 +227,9 @@ SQL 线程，会读取relay log文件中的日志，并解析成具体操作，�
 
 # 第四章: Zookeeper的ZAB协议
 ## 协议介绍
+
+Zookeeper是一个高可用的分布式协调服务，用来完成一系列诸如可靠地配置存储和运行时状态记录等分布式协调工作，能够很好地在高并发情况下完成分布式数据一致性处理。
+
 Zookeeper中，依赖ZAB协议来实现分布式数据一致性。基于该协议，Zookeeper实现了一种主备模式的系统架构来保持集群中各副本之间的数据一致性。具体的，Zookeeper使用一个单一的主进程来接收并处理客户端的所有事务请求，并采用ZAB的原子广播协议，将服务器数据的状态变更以事务Proposal的形式广播到所有副本进程
 
 当Leader服务器出现崩溃或者重启，亦或是集群中已经不存在过半的服务器与该Leader服务器保持正常通信时，那么在重新开始新一轮原子广播事务操作前，所有进程首先会使用崩溃协议来使彼此达到一个一致的状态
@@ -257,6 +260,27 @@ Leader将那些没有被各Follower服务器同步的事务以Proposal消息的�
 当选举产生一个新的Leader服务器，就会从这个Leader服务器上取出其本地日志中最大事务Proposal的ZXID，并解析出epoch值，进行加一，作为新的epoch，代表新的周期。
 所以，当一个包含了上一个Leader周期中尚未提交过的事务Proposal的服务器启动时，其肯定无法成为Leader。因为该集群机器中一定包含了更高epoch事务Proposal，因此这台机器Proposal肯定不是最高的。
 当这个机器加入集群后，以Follower的角色连上Leader，Leader会根据自己最后被提交的Proposal来和Follower比对，要求进行回退，到一个已经被半数机器提交的最新Proposal
+
+### 算法描述
+#### 阶段一：发现
+- Follower F 将自己最后接受的事务Proposal的epoch值CEPOCH(Fp)发送给准Leader L
+- 当接收到过半F 的epoch消息后，L会生成NewEpoch(e')（最大epoch+1）消息给这些过半F
+- F收到来自L的消息后，如果自己的CEPOCH(Fp)小于e'，则将epoch赋值为e'，同时向这个准Leader L 反馈ack。这个消息中，包含了该F的epoch，以及该F的历史Proposal集合
+- 当L接收到过半Ack之后，L就会从中选取一个F，并使用其作为初始化事务集合Ie'
+
+#### 阶段二：同步
+- L会将e'和Ie'以NewLeader(e',Ie')消息形式发送给所有集合中的Follower
+- F收到消息后，如果发现自己的CEPOCH(Fp)不等于e'，则直接进入下一轮循环，因为还在上一轮，无法参加同步。如果相等，Follower就会执行事务应用操作。最后会反馈Leader，表明自己已经接受并处理Ie'中的事务。
+- 当Leader接受来自半数F的反馈消息后，会向所有F发送commit
+- F收到commit后，依次处理并提交Ie'中未处理的事务
+
+#### 阶段三：广播
+- Leader L接收到客户端新的事务请求后，会生成对应的Proposal，并依据ZXID向所有Follower发送提案
+- F 根据消息接收的先后次序来处理这些来自L的事务，并加入完成序列当中，然后反馈给Leader
+- L 收到半数F的Ack后，会发送commit给全部F，要求进行事务提交
+- 当F收到commit后，开始进行提交
+
+
 
 ## ZAB 与Paxos协议区别
 
